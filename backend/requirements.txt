@@ -1,0 +1,58 @@
+# FastAPI and web framework dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database and ORM (for future use)
+# sqlalchemy==2.0.23
+# alembic==1.13.1
+
+# Pydantic for data validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# File processing dependencies
+PyPDF2==3.0.1
+Pillow==10.1.0
+pytesseract==0.3.10
+
+# NLP and text analysis
+textblob==0.17.1
+nltk==3.8.1
+
+# WebSocket support
+websockets==12.0
+
+# HTTP client for external APIs
+httpx==0.25.2
+requests==2.31.0
+
+# Async support
+aiofiles==23.2.1
+
+# Environment variables
+python-dotenv==1.0.0
+
+# CORS and security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Logging and monitoring
+loguru==0.7.2
+
+# Testing dependencies (development)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Code quality (development)
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+
+# Type checking (development)
+mypy==1.7.1
+
+# Documentation
+mkdocs==1.5.3
+mkdocs-material==9.4.8

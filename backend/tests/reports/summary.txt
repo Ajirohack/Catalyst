@@ -1,0 +1,21 @@
+Catalyst Backend Test Summary
+============================
+Generated: Thu Jun 12 14:01:40 WAT 2025
+Test Directory: /Volumes/Project Disk/Catalyst/backend/tests
+Backend Directory: /Volumes/Project Disk/Catalyst/backend
+
+Test Configuration:
+- Unit Tests: true
+- Integration Tests: true
+- Performance Tests: false
+- WebSocket Tests: true
+- Coverage Enabled: true
+- Parallel Execution: false
+- Verbose Output: false
+
+Reports Generated:
+- HTML Report: /Volumes/Project Disk/Catalyst/backend/tests/reports/test_report.html
+- JSON Report: /Volumes/Project Disk/Catalyst/backend/tests/reports/test_report.json
+- JUnit XML: /Volumes/Project Disk/Catalyst/backend/tests/reports/junit.xml
+- Coverage Report: /Volumes/Project Disk/Catalyst/backend/tests/reports/coverage/index.html
+
