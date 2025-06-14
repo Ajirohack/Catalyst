@@ -5,7 +5,7 @@ from PIL import Image
 import pytesseract
 from textblob import TextBlob
 from typing import Dict, List, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import re
 import json
@@ -168,7 +168,7 @@ class AnalysisService:
                 "metadata": {
                     "participants": participants,
                     "project_id": project_id,
-                    "analyzed_at": datetime.utcnow().isoformat(),
+                    "analyzed_at": datetime.now(timezone.utc).isoformat(),
                     **(metadata or {})
                 }
             }
@@ -399,4 +399,4 @@ class AnalysisService:
     
     def get_timestamp(self) -> str:
         """Get current timestamp."""
-        return datetime.utcnow().isoformat()
+        return datetime.now(timezone.utc).isoformat()

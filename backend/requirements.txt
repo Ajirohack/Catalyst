@@ -45,6 +45,12 @@ pytest==7.4.3
 pytest-asyncio==0.21.1
 httpx==0.25.2
 
+# Enhanced dependencies for code quality improvements
+structlog==23.2.0     # Structured logging
+prometheus-client==0.19.0  # Metrics collection (optional)
+psycopg2-binary==2.9.9  # PostgreSQL driver (future)
+redis==5.0.1          # Caching support (future)
+
 # Code quality (development)
 black==23.11.0
 flake8==6.1.0

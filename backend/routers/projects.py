@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query, Path, Depends
 from fastapi.responses import JSONResponse
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 # Import models and schemas
@@ -333,7 +333,7 @@ async def remove_project_goal(
         
         if 0 <= goal_index < len(project.goals):
             project.goals.pop(goal_index)
-            project.updated_at = datetime.utcnow()
+            project.updated_at = datetime.now(timezone.utc)
         else:
             raise HTTPException(status_code=400, detail="Invalid goal index")
         
@@ -408,5 +408,5 @@ async def projects_health_check():
         "status": "healthy",
         "service": "projects",
         "total_projects": len(projects_db),
-        "timestamp": datetime.utcnow()
+        "timestamp": datetime.now(timezone.utc)
     }

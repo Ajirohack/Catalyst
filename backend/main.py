@@ -1,32 +1,43 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 import os
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 
 # Import routers
 from routers import projects, analysis
+from config import setup_logging, get_logger
+from middleware import PerformanceMiddleware, RequestCounterMiddleware
+from docs import enhance_api_docs, API_TAGS
 
 # Lifespan event handler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("🚀 Catalyst System Backend starting up...")
+    log_level = os.getenv("LOG_LEVEL", "INFO")
+    setup_logging(log_level)
+    logger = get_logger("main")
+    logger.info("🚀 Catalyst Backend starting up...")
     yield
     # Shutdown
-    print("🛑 Catalyst System Backend shutting down...")
+    logger.info("🛑 Catalyst Backend shutting down...")
 
 # Create FastAPI application
 app = FastAPI(
-    title="Catalyst System Backend",
-    description="API for managing Catalyst relationship projects and real-time coaching",
+    title="Catalyst Backend API",
+    description="Backend API for the Catalyst project management and analysis system",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
+    openapi_tags=API_TAGS
 )
+
+# Enhance API documentation
+enhance_api_docs(app)
 
 # CORS middleware configuration
 allowed_origins = [
@@ -40,6 +51,10 @@ allowed_origins = [
 if os.getenv("ALLOWED_ORIGINS"):
     env_origins = os.getenv("ALLOWED_ORIGINS").split(",")
     allowed_origins.extend([origin.strip() for origin in env_origins])
+
+# Performance monitoring middleware
+app.add_middleware(PerformanceMiddleware, log_slow_requests=True, slow_threshold=1.0)
+app.add_middleware(RequestCounterMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
@@ -119,7 +134,7 @@ async def health_check():
         "status": "healthy",
         "service": "catalyst-backend",
         "version": "1.0.0",
-        "timestamp": "2024-01-01T00:00:00Z",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "uptime": "operational",
         "services": {
             "database": "connected",

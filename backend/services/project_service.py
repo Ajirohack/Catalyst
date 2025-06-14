@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from models.project import Project
 from schemas.project_schema import ProjectCreate, ProjectUpdate
@@ -32,8 +32,8 @@ class ProjectService:
             participants=project_data.participants or [],
             goals=project_data.goals or [],
             status="active",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
             metadata=project_data.metadata or {}
         )
         
@@ -131,7 +131,7 @@ class ProjectService:
         if project_data.metadata is not None:
             project.metadata = {**project.metadata, **project_data.metadata}
         
-        project.updated_at = datetime.utcnow()
+        project.updated_at = datetime.now(timezone.utc)
         
         return project
     

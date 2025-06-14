@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Depends, Query, Path, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import asyncio
 import uuid
@@ -242,7 +242,7 @@ async def whisper_websocket(
             "status": "connected",
             "session_id": session_id,
             "message": "Catalyst Whisper connected. Ready for real-time coaching.",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }, session_id)
         
         while True:

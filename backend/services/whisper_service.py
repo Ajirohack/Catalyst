@@ -1,7 +1,7 @@
 import asyncio
 from textblob import TextBlob
 from typing import Dict, List, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import re
 
@@ -331,7 +331,7 @@ class WhisperService:
                     "context": current_context
                 },
                 "flow_analysis": flow_analysis,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
