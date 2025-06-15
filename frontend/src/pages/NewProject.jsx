@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Paper,
@@ -20,47 +20,85 @@ import {
   Grid,
   Divider,
   IconButton,
-  Tooltip,
   FormHelperText,
   Switch,
-  FormControlLabel
-} from '@mui/material';
+  FormControlLabel,
+} from "@mui/material";
 import {
   CloudUpload as UploadIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
-  Info as InfoIcon,
   Psychology as PsychologyIcon,
   Favorite as FavoriteIcon,
   Business as BusinessIcon,
   School as SchoolIcon,
-  Group as GroupIcon
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+  Group as GroupIcon,
+} from "@mui/icons-material";
+import { motion } from "framer-motion";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const PLATFORMS = [
-  { value: 'whatsapp', label: 'WhatsApp', icon: '💬' },
-  { value: 'telegram', label: 'Telegram', icon: '✈️' },
-  { value: 'discord', label: 'Discord', icon: '🎮' },
-  { value: 'slack', label: 'Slack', icon: '💼' },
-  { value: 'email', label: 'Email', icon: '📧' },
-  { value: 'sms', label: 'SMS', icon: '📱' },
-  { value: 'other', label: 'Other', icon: '🔗' }
+  { value: "whatsapp", label: "WhatsApp", icon: "💬" },
+  { value: "telegram", label: "Telegram", icon: "✈️" },
+  { value: "discord", label: "Discord", icon: "🎮" },
+  { value: "slack", label: "Slack", icon: "💼" },
+  { value: "email", label: "Email", icon: "📧" },
+  { value: "sms", label: "SMS", icon: "📱" },
+  { value: "other", label: "Other", icon: "🔗" },
 ];
 
 const ROLES = [
-  { value: 'romantic_partner', label: 'Romantic Partner', icon: <FavoriteIcon />, description: 'Dating, relationships, marriage' },
-  { value: 'business_partner', label: 'Business Partner', icon: <BusinessIcon />, description: 'Professional collaborations, negotiations' },
-  { value: 'friend', label: 'Friend', icon: <GroupIcon />, description: 'Personal friendships, social connections' },
-  { value: 'family_member', label: 'Family Member', icon: <FavoriteIcon />, description: 'Parents, siblings, relatives' },
-  { value: 'colleague', label: 'Colleague', icon: <BusinessIcon />, description: 'Work relationships, team members' },
-  { value: 'mentor_mentee', label: 'Mentor/Mentee', icon: <SchoolIcon />, description: 'Learning and guidance relationships' },
-  { value: 'other', label: 'Other', icon: <GroupIcon />, description: 'Custom relationship type' }
+  {
+    value: "romantic_partner",
+    label: "Romantic Partner",
+    icon: <FavoriteIcon />,
+    description: "Dating, relationships, marriage",
+  },
+  {
+    value: "business_partner",
+    label: "Business Partner",
+    icon: <BusinessIcon />,
+    description: "Professional collaborations, negotiations",
+  },
+  {
+    value: "friend",
+    label: "Friend",
+    icon: <GroupIcon />,
+    description: "Personal friendships, social connections",
+  },
+  {
+    value: "family_member",
+    label: "Family Member",
+    icon: <FavoriteIcon />,
+    description: "Parents, siblings, relatives",
+  },
+  {
+    value: "colleague",
+    label: "Colleague",
+    icon: <BusinessIcon />,
+    description: "Work relationships, team members",
+  },
+  {
+    value: "mentor_mentee",
+    label: "Mentor/Mentee",
+    icon: <SchoolIcon />,
+    description: "Learning and guidance relationships",
+  },
+  {
+    value: "other",
+    label: "Other",
+    icon: <GroupIcon />,
+    description: "Custom relationship type",
+  },
 ];
 
-const steps = ['Basic Info', 'Relationship Details', 'Goals & Upload', 'Review'];
+const steps = [
+  "Basic Info",
+  "Relationship Details",
+  "Goals & Upload",
+  "Review",
+];
 
 const NewProject = () => {
   const navigate = useNavigate();
@@ -71,47 +109,53 @@ const NewProject = () => {
 
   // Form data
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    platform: '',
-    role: '',
-    partnerName: '',
-    relationshipDuration: '',
+    name: "",
+    description: "",
+    platform: "",
+    role: "",
+    partnerName: "",
+    relationshipDuration: "",
     goals: [],
     isPrivate: true,
     enableAI: true,
-    files: []
+    files: [],
   });
 
-  const [currentGoal, setCurrentGoal] = useState('');
+  const [currentGoal, setCurrentGoal] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
   };
 
   const handleAddGoal = () => {
     if (currentGoal.trim() && !formData.goals.includes(currentGoal.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        goals: [...prev.goals, currentGoal.trim()]
+        goals: [...prev.goals, currentGoal.trim()],
       }));
-      setCurrentGoal('');
+      setCurrentGoal("");
     }
   };
 
   const handleRemoveGoal = (goalToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      goals: prev.goals.filter(goal => goal !== goalToRemove)
+      goals: prev.goals.filter((goal) => goal !== goalToRemove),
     }));
   };
 
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
     const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ['text/plain', 'application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
+    const allowedTypes = [
+      "text/plain",
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+    ];
 
     for (const file of files) {
       if (file.size > maxSize) {
@@ -119,21 +163,23 @@ const NewProject = () => {
         return;
       }
       if (!allowedTypes.includes(file.type)) {
-        setError(`File ${file.name} has unsupported format. Supported: PDF, images, text files.`);
+        setError(
+          `File ${file.name} has unsupported format. Supported: PDF, images, text files.`
+        );
         return;
       }
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      files: [...prev.files, ...files]
+      files: [...prev.files, ...files],
     }));
   };
 
   const handleRemoveFile = (fileToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      files: prev.files.filter(file => file !== fileToRemove)
+      files: prev.files.filter((file) => file !== fileToRemove),
     }));
   };
 
@@ -154,21 +200,21 @@ const NewProject = () => {
 
   const handleNext = () => {
     if (validateStep(activeStep)) {
-      setActiveStep(prev => prev + 1);
+      setActiveStep((prev) => prev + 1);
       setError(null);
     } else {
-      setError('Please fill in all required fields before proceeding.');
+      setError("Please fill in all required fields before proceeding.");
     }
   };
 
   const handleBack = () => {
-    setActiveStep(prev => prev - 1);
+    setActiveStep((prev) => prev - 1);
     setError(null);
   };
 
   const handleSubmit = async () => {
     if (!validateStep(activeStep)) {
-      setError('Please complete all required fields.');
+      setError("Please complete all required fields.");
       return;
     }
 
@@ -184,43 +230,52 @@ const NewProject = () => {
         role: formData.role,
         partner_name: formData.partnerName,
         relationship_duration: formData.relationshipDuration,
-        goals: formData.goals.map(goal => ({ description: goal, completed: false })),
+        goals: formData.goals.map((goal) => ({
+          description: goal,
+          completed: false,
+        })),
         is_private: formData.isPrivate,
-        enable_ai: formData.enableAI
+        enable_ai: formData.enableAI,
       };
 
-      const response = await axios.post('http://localhost:8000/api/projects/', projectData);
+      const response = await axios.post(
+        "http://localhost:8000/api/projects/",
+        projectData
+      );
       const projectId = response.data.id;
 
       // Upload files if any
       if (formData.files.length > 0) {
         const uploadFormData = new FormData();
-        formData.files.forEach(file => {
-          uploadFormData.append('files', file);
+        formData.files.forEach((file) => {
+          uploadFormData.append("files", file);
         });
-        uploadFormData.append('project_id', projectId);
+        uploadFormData.append("project_id", projectId);
 
         await axios.post(
-          'http://localhost:8000/api/analysis/upload',
+          "http://localhost:8000/api/analysis/upload",
           uploadFormData,
           {
-            headers: { 'Content-Type': 'multipart/form-data' },
+            headers: { "Content-Type": "multipart/form-data" },
             onUploadProgress: (progressEvent) => {
               const progress = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
               );
               setUploadProgress(progress);
-            }
+            },
           }
         );
       }
 
       setSuccess(true);
       setTimeout(() => {
-        navigate('/continue');
+        navigate("/continue");
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to create project. Please try again.');
+      setError(
+        err.response?.data?.detail ||
+          "Failed to create project. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -236,7 +291,7 @@ const NewProject = () => {
                 fullWidth
                 label="Project Name"
                 value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange("name", e.target.value)}
                 placeholder="e.g., Sarah Relationship Project"
                 required
                 helperText="Give your project a memorable name"
@@ -247,7 +302,9 @@ const NewProject = () => {
                 fullWidth
                 label="Description"
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 placeholder="Brief description of this relationship project..."
                 multiline
                 rows={3}
@@ -259,19 +316,25 @@ const NewProject = () => {
                 <InputLabel>Communication Platform</InputLabel>
                 <Select
                   value={formData.platform}
-                  onChange={(e) => handleInputChange('platform', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("platform", e.target.value)
+                  }
                   label="Communication Platform"
                 >
                   {PLATFORMS.map((platform) => (
                     <MenuItem key={platform.value} value={platform.value}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <span>{platform.icon}</span>
                         {platform.label}
                       </Box>
                     </MenuItem>
                   ))}
                 </Select>
-                <FormHelperText>Where do you primarily communicate?</FormHelperText>
+                <FormHelperText>
+                  Where do you primarily communicate?
+                </FormHelperText>
               </FormControl>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -279,12 +342,14 @@ const NewProject = () => {
                 <InputLabel>Relationship Type</InputLabel>
                 <Select
                   value={formData.role}
-                  onChange={(e) => handleInputChange('role', e.target.value)}
+                  onChange={(e) => handleInputChange("role", e.target.value)}
                   label="Relationship Type"
                 >
                   {ROLES.map((role) => (
                     <MenuItem key={role.value} value={role.value}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         {role.icon}
                         <Box>
                           <Typography variant="body2">{role.label}</Typography>
@@ -296,7 +361,9 @@ const NewProject = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                <FormHelperText>What type of relationship is this?</FormHelperText>
+                <FormHelperText>
+                  What type of relationship is this?
+                </FormHelperText>
               </FormControl>
             </Grid>
           </Grid>
@@ -310,7 +377,9 @@ const NewProject = () => {
                 fullWidth
                 label="Partner's Name"
                 value={formData.partnerName}
-                onChange={(e) => handleInputChange('partnerName', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("partnerName", e.target.value)
+                }
                 placeholder="e.g., Sarah"
                 required
                 helperText="How do you refer to this person?"
@@ -321,7 +390,9 @@ const NewProject = () => {
                 fullWidth
                 label="Relationship Duration"
                 value={formData.relationshipDuration}
-                onChange={(e) => handleInputChange('relationshipDuration', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("relationshipDuration", e.target.value)
+                }
                 placeholder="e.g., 2 years, 6 months, Just started"
                 helperText="How long have you known each other?"
               />
@@ -331,12 +402,18 @@ const NewProject = () => {
                 control={
                   <Switch
                     checked={formData.isPrivate}
-                    onChange={(e) => handleInputChange('isPrivate', e.target.checked)}
+                    onChange={(e) =>
+                      handleInputChange("isPrivate", e.target.checked)
+                    }
                   />
                 }
                 label="Keep this project private"
               />
-              <Typography variant="caption" color="text.secondary" display="block">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+              >
                 Private projects are only visible to you
               </Typography>
             </Grid>
@@ -345,12 +422,18 @@ const NewProject = () => {
                 control={
                   <Switch
                     checked={formData.enableAI}
-                    onChange={(e) => handleInputChange('enableAI', e.target.checked)}
+                    onChange={(e) =>
+                      handleInputChange("enableAI", e.target.checked)
+                    }
                   />
                 }
                 label="Enable AI coaching suggestions"
               />
-              <Typography variant="caption" color="text.secondary" display="block">
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+              >
                 Get real-time AI-powered relationship advice
               </Typography>
             </Grid>
@@ -364,7 +447,7 @@ const NewProject = () => {
               <Typography variant="h6" gutterBottom>
                 Relationship Goals
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+              <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                 <TextField
                   fullWidth
                   label="Add a goal"
@@ -372,7 +455,7 @@ const NewProject = () => {
                   onChange={(e) => setCurrentGoal(e.target.value)}
                   placeholder="e.g., Improve communication, Resolve conflicts better"
                   onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       handleAddGoal();
                     }
@@ -382,12 +465,12 @@ const NewProject = () => {
                   variant="contained"
                   onClick={handleAddGoal}
                   disabled={!currentGoal.trim()}
-                  sx={{ minWidth: 'auto', px: 2 }}
+                  sx={{ minWidth: "auto", px: 2 }}
                 >
                   <AddIcon />
                 </Button>
               </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
                 {formData.goals.map((goal, index) => (
                   <Chip
                     key={index}
@@ -404,31 +487,30 @@ const NewProject = () => {
                 </Alert>
               )}
             </Grid>
-            
+
             <Grid item xs={12}>
               <Divider sx={{ my: 2 }} />
               <Typography variant="h6" gutterBottom>
                 Upload Conversation Data (Optional)
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Upload chat exports, screenshots, or documents to help AI understand your communication patterns
+                Upload chat exports, screenshots, or documents to help AI
+                understand your communication patterns
               </Typography>
-              
+
               <Box
-                sx={
-                  {
-                    border: '2px dashed',
-                    borderColor: 'primary.main',
-                    borderRadius: 2,
-                    p: 3,
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      bgcolor: 'action.hover'
-                    }
-                  }
-                }
-                onClick={() => document.getElementById('file-upload').click()}
+                sx={{
+                  border: "2px dashed",
+                  borderColor: "primary.main",
+                  borderRadius: 2,
+                  p: 3,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                  },
+                }}
+                onClick={() => document.getElementById("file-upload").click()}
               >
                 <input
                   id="file-upload"
@@ -436,9 +518,11 @@ const NewProject = () => {
                   multiple
                   accept=".pdf,.txt,.jpg,.jpeg,.png,.gif"
                   onChange={handleFileUpload}
-                  style={{ display: 'none' }}
+                  style={{ display: "none" }}
                 />
-                <UploadIcon sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                <UploadIcon
+                  sx={{ fontSize: 48, color: "primary.main", mb: 1 }}
+                />
                 <Typography variant="body1" gutterBottom>
                   Click to upload files or drag and drop
                 </Typography>
@@ -446,7 +530,7 @@ const NewProject = () => {
                   Supported: PDF, images, text files (max 10MB each)
                 </Typography>
               </Box>
-              
+
               {formData.files.length > 0 && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>
@@ -456,14 +540,14 @@ const NewProject = () => {
                     <Box
                       key={index}
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                         p: 1,
                         border: 1,
-                        borderColor: 'divider',
+                        borderColor: "divider",
                         borderRadius: 1,
-                        mb: 1
+                        mb: 1,
                       }}
                     >
                       <Typography variant="body2">
@@ -507,7 +591,10 @@ const NewProject = () => {
                         Platform
                       </Typography>
                       <Typography variant="body1" gutterBottom>
-                        {PLATFORMS.find(p => p.value === formData.platform)?.label}
+                        {
+                          PLATFORMS.find((p) => p.value === formData.platform)
+                            ?.label
+                        }
                       </Typography>
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -515,7 +602,7 @@ const NewProject = () => {
                         Relationship Type
                       </Typography>
                       <Typography variant="body1" gutterBottom>
-                        {ROLES.find(r => r.value === formData.role)?.label}
+                        {ROLES.find((r) => r.value === formData.role)?.label}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -540,7 +627,14 @@ const NewProject = () => {
                       <Typography variant="subtitle2" color="text.secondary">
                         Goals ({formData.goals.length})
                       </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: 0.5,
+                          mt: 0.5,
+                        }}
+                      >
                         {formData.goals.map((goal, index) => (
                           <Chip key={index} label={goal} size="small" />
                         ))}
@@ -552,7 +646,7 @@ const NewProject = () => {
                           Files ({formData.files.length})
                         </Typography>
                         <Typography variant="body2">
-                          {formData.files.map(f => f.name).join(', ')}
+                          {formData.files.map((f) => f.name).join(", ")}
                         </Typography>
                       </Grid>
                     )}
@@ -577,20 +671,21 @@ const NewProject = () => {
       >
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '60vh',
-            textAlign: 'center'
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+            textAlign: "center",
           }}
         >
-          <PsychologyIcon sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
+          <PsychologyIcon sx={{ fontSize: 80, color: "success.main", mb: 2 }} />
           <Typography variant="h4" gutterBottom>
             Project Created Successfully!
           </Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>
-            Your relationship project has been set up. Redirecting to your projects...
+            Your relationship project has been set up. Redirecting to your
+            projects...
           </Typography>
           <CircularProgress sx={{ mt: 2 }} />
         </Box>
@@ -604,8 +699,12 @@ const NewProject = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Box sx={{ maxWidth: 800, mx: 'auto', p: 3 }}>
-        <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
           <PsychologyIcon color="primary" />
           Create New Project
         </Typography>
@@ -630,7 +729,7 @@ const NewProject = () => {
 
           {renderStepContent(activeStep)}
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4 }}>
             <Button
               onClick={handleBack}
               disabled={activeStep === 0}
@@ -638,16 +737,22 @@ const NewProject = () => {
             >
               Back
             </Button>
-            
-            <Box sx={{ display: 'flex', gap: 1 }}>
+
+            <Box sx={{ display: "flex", gap: 1 }}>
               {activeStep === steps.length - 1 ? (
                 <Button
                   variant="contained"
                   onClick={handleSubmit}
                   disabled={loading || !validateStep(activeStep)}
-                  startIcon={loading ? <CircularProgress size={20} /> : <PsychologyIcon />}
+                  startIcon={
+                    loading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <PsychologyIcon />
+                    )
+                  }
                 >
-                  {loading ? 'Creating Project...' : 'Create Project'}
+                  {loading ? "Creating Project..." : "Create Project"}
                 </Button>
               ) : (
                 <Button
@@ -666,14 +771,14 @@ const NewProject = () => {
               <Typography variant="body2" gutterBottom>
                 Uploading files... {uploadProgress}%
               </Typography>
-              <Box sx={{ width: '100%', bgcolor: 'grey.200', borderRadius: 1 }}>
+              <Box sx={{ width: "100%", bgcolor: "grey.200", borderRadius: 1 }}>
                 <Box
                   sx={{
                     width: `${uploadProgress}%`,
-                    bgcolor: 'primary.main',
+                    bgcolor: "primary.main",
                     height: 8,
                     borderRadius: 1,
-                    transition: 'width 0.3s ease'
+                    transition: "width 0.3s ease",
                   }}
                 />
               </Box>

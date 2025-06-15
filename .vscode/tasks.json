@@ -1,0 +1,76 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Frontend Development Server",
+      "type": "shell",
+      "command": "cd frontend && npm install && npm start",
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Catalyst Whisper Extension",
+      "type": "shell",
+      "command": "cd chrome_extension && chmod +x test_extension.sh && ./test_extension.sh",
+      "group": "test",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Package Catalyst Whisper Extension",
+      "type": "shell",
+      "command": "cd chrome_extension && chmod +x package_extension.sh && ./package_extension.sh",
+      "group": "build",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Chrome with Extension",
+      "type": "shell",
+      "command": "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --load-extension=\"/Volumes/Project Disk/Catalyst/chrome_extension\" --no-first-run --user-data-dir=/tmp/catalyst-dev-profile",
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Open Whisper Coach Test UI",
+      "type": "shell",
+      "command": "cd chrome_extension && chmod +x open_test_ui.sh && ./open_test_ui.sh",
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Platform Testing",
+      "type": "shell",
+      "command": "cd chrome_extension && chmod +x test_platforms.sh && ./test_platforms.sh",
+      "group": "test",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Manage UAT Process",
+      "type": "shell",
+      "command": "cd chrome_extension && chmod +x manage_uat.sh && ./manage_uat.sh",
+      "args": ["${input:uatCommand}", "${input:uatSubCommand}"],
+      "group": "test",
+      "isBackground": false,
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "uatCommand",
+      "description": "UAT Command (setup, participant, feedback, report, help)",
+      "default": "help",
+      "type": "promptString"
+    },
+    {
+      "id": "uatSubCommand",
+      "description": "UAT Sub-Command (e.g., add, list, status, collect, analyze, generate)",
+      "default": "",
+      "type": "promptString"
+    }
+  ]
+}

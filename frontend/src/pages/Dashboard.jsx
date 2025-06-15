@@ -1,32 +1,6 @@
 import React from 'react';
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Avatar,
-  Chip,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Divider,
-  Paper,
-} from '@mui/material';
-import {
-  Add as AddIcon,
-  TrendingUp as TrendingUpIcon,
-  Favorite as HeartIcon,
-  Psychology as AIIcon,
-  Timeline as TimelineIcon,
-  Analytics as AnalyticsIcon,
-  CheckCircle as CheckIcon,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -38,7 +12,20 @@ import {
   PieChart,
   Pie,
   Cell,
-} from 'recharts';
+} from "recharts";
+import {
+  Plus,
+  TrendingUp,
+  Heart,
+  Brain,
+  FolderOpen,
+  BarChart3,
+  CheckCircle,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Progress } from "../components/ui/progress";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -47,76 +34,80 @@ const Dashboard = () => {
   const recentProjects = [
     {
       id: 1,
-      name: 'Improving Communication',
-      participants: ['Alice', 'Bob'],
-      status: 'active',
+      name: "Improving Communication",
+      participants: ["Alice", "Bob"],
+      status: "active",
       progress: 75,
-      lastActivity: '2 hours ago',
+      lastActivity: "2 hours ago",
     },
     {
       id: 2,
-      name: 'Family Bonding',
-      participants: ['Mom', 'Dad', 'Sister'],
-      status: 'active',
+      name: "Family Bonding",
+      participants: ["Mom", "Dad", "Sister"],
+      status: "active",
       progress: 45,
-      lastActivity: '1 day ago',
+      lastActivity: "1 day ago",
     },
     {
       id: 3,
-      name: 'Workplace Relationships',
-      participants: ['Team Lead', 'Colleagues'],
-      status: 'paused',
+      name: "Workplace Relationships",
+      participants: ["Team Lead", "Colleagues"],
+      status: "paused",
       progress: 30,
-      lastActivity: '3 days ago',
+      lastActivity: "3 days ago",
     },
   ];
 
   const relationshipHealthData = [
-    { name: 'Mon', score: 7.2 },
-    { name: 'Tue', score: 7.8 },
-    { name: 'Wed', score: 6.9 },
-    { name: 'Thu', score: 8.1 },
-    { name: 'Fri', score: 8.5 },
-    { name: 'Sat', score: 9.0 },
-    { name: 'Sun', score: 8.7 },
+    { name: "Mon", score: 7.2 },
+    { name: "Tue", score: 7.8 },
+    { name: "Wed", score: 6.9 },
+    { name: "Thu", score: 8.1 },
+    { name: "Fri", score: 8.5 },
+    { name: "Sat", score: 9.0 },
+    { name: "Sun", score: 8.7 },
   ];
 
   const communicationBreakdown = [
-    { name: 'Positive', value: 65, color: '#10b981' },
-    { name: 'Neutral', value: 25, color: '#6b7280' },
-    { name: 'Needs Work', value: 10, color: '#ef4444' },
+    { name: "Positive", value: 65, color: "#10b981" },
+    { name: "Neutral", value: 25, color: "#6b7280" },
+    { name: "Needs Work", value: 10, color: "#ef4444" },
   ];
 
   const recentInsights = [
     {
       id: 1,
-      type: 'achievement',
-      title: 'Communication Milestone',
-      description: 'You\'ve improved active listening by 40% this week!',
-      time: '1 hour ago',
+      type: "achievement",
+      title: "Communication Milestone",
+      description: "You've improved active listening by 40% this week!",
+      time: "1 hour ago",
     },
     {
       id: 2,
-      type: 'suggestion',
-      title: 'Quality Time Opportunity',
-      description: 'Consider scheduling a device-free dinner tonight',
-      time: '3 hours ago',
+      type: "suggestion",
+      title: "Quality Time Opportunity",
+      description: "Consider scheduling a device-free dinner tonight",
+      time: "3 hours ago",
     },
     {
       id: 3,
-      type: 'analysis',
-      title: 'Weekly Analysis Ready',
-      description: 'Your relationship health report is available',
-      time: '1 day ago',
+      type: "analysis",
+      title: "Weekly Analysis Ready",
+      description: "Your relationship health report is available",
+      time: "1 day ago",
     },
   ];
 
   const getInsightIcon = (type) => {
     switch (type) {
-      case 'achievement': return <CheckIcon color="success" />;
-      case 'suggestion': return <AIIcon color="primary" />;
-      case 'analysis': return <AnalyticsIcon color="info" />;
-      default: return <HeartIcon />;
+      case "achievement":
+        return <CheckCircle className="h-5 w-5 text-green-600" />;
+      case "suggestion":
+        return <Brain className="h-5 w-5 text-blue-600" />;
+      case "analysis":
+        return <BarChart3 className="h-5 w-5 text-purple-600" />;
+      default:
+        return <Heart className="h-5 w-5 text-red-600" />;
     }
   };
 
@@ -142,133 +133,101 @@ const Dashboard = () => {
   };
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <div className="max-w-7xl mx-auto p-6">
         {/* Welcome Section */}
         <motion.div variants={itemVariants}>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-foreground mb-2">
               Welcome back, John! 👋
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
+            </h1>
+            <p className="text-muted-foreground text-lg">
               Here's what's happening with your relationships today.
-            </Typography>
-          </Box>
+            </p>
+          </div>
         </motion.div>
 
         {/* Quick Stats */}
         <motion.div variants={itemVariants}>
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ textAlign: 'center', p: 2 }}>
-                <Avatar sx={{ bgcolor: 'primary.main', mx: 'auto', mb: 2 }}>
-                  <HeartIcon />
-                </Avatar>
-                <Typography variant="h4" fontWeight="bold" color="primary">
-                  8.5
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Relationship Health
-                </Typography>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ textAlign: 'center', p: 2 }}>
-                <Avatar sx={{ bgcolor: 'success.main', mx: 'auto', mb: 2 }}>
-                  <TrendingUpIcon />
-                </Avatar>
-                <Typography variant="h4" fontWeight="bold" color="success.main">
-                  +12%
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Weekly Improvement
-                </Typography>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ textAlign: 'center', p: 2 }}>
-                <Avatar sx={{ bgcolor: 'info.main', mx: 'auto', mb: 2 }}>
-                  <TimelineIcon />
-                </Avatar>
-                <Typography variant="h4" fontWeight="bold" color="info.main">
-                  3
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Active Projects
-                </Typography>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card sx={{ textAlign: 'center', p: 2 }}>
-                <Avatar sx={{ bgcolor: 'warning.main', mx: 'auto', mb: 2 }}>
-                  <AIIcon />
-                </Avatar>
-                <Typography variant="h4" fontWeight="bold" color="warning.main">
-                  24
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  AI Suggestions Used
-                </Typography>
-              </Card>
-            </Grid>
-          </Grid>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <h3 className="text-3xl font-bold text-primary mb-2">8.5</h3>
+                <p className="text-sm text-muted-foreground">Relationship Health</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-green-600 mb-2">+12%</h3>
+                <p className="text-sm text-muted-foreground">Weekly Improvement</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FolderOpen className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-blue-600 mb-2">3</h3>
+                <p className="text-sm text-muted-foreground">Active Projects</p>
+              </CardContent>
+            </Card>
+            <Card className="text-center">
+              <CardContent className="p-6">
+                <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-orange-600 mb-2">24</h3>
+                <p className="text-sm text-muted-foreground">AI Suggestions Used</p>
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
 
-        <Grid container spacing={3}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Projects */}
-          <Grid item xs={12} md={8}>
+          <div className="lg:col-span-2">
             <motion.div variants={itemVariants}>
-              <Card sx={{ mb: 3 }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" fontWeight="bold">
-                      Your Projects
-                    </Typography>
-                    <Button
-                      variant="contained"
-                      startIcon={<AddIcon />}
-                      onClick={() => navigate('/new-project')}
-                    >
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Your Projects</CardTitle>
+                    <Button onClick={() => navigate("/new-project")} className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
                       New Project
                     </Button>
-                  </Box>
-                  
-                  {recentProjects.map((project) => (
-                    <Box key={project.id} sx={{ mb: 3 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                        <Typography variant="subtitle1" fontWeight={600}>
-                          {project.name}
-                        </Typography>
-                        <Chip
-                          label={project.status}
-                          size="small"
-                          color={project.status === 'active' ? 'success' : 'default'}
-                        />
-                      </Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                        Participants: {project.participants.join(', ')}
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Box sx={{ flexGrow: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={project.progress}
-                            sx={{ height: 8, borderRadius: 4 }}
-                          />
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
+                  </div>
+                </CardHeader>
+                <CardContent>
+
+                  {recentProjects.map((project, index) => (
+                    <div key={project.id} className={`${index < recentProjects.length - 1 ? 'mb-6 pb-6 border-b' : 'mb-0'}`}>
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-lg font-semibold">{project.name}</h4>
+                        <Badge variant={project.status === "active" ? "default" : "secondary"}>
+                          {project.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Participants: {project.participants.join(", ")}
+                      </p>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="flex-1">
+                          <Progress value={project.progress} className="h-2" />
+                        </div>
+                        <span className="text-sm text-muted-foreground">
                           {project.progress}%
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
                         Last activity: {project.lastActivity}
-                      </Typography>
-                      {project.id < recentProjects.length && <Divider sx={{ mt: 2 }} />}
-                    </Box>
+                      </p>
+                    </div>
                   ))}
                 </CardContent>
               </Card>
@@ -277,11 +236,11 @@ const Dashboard = () => {
             {/* Relationship Health Chart */}
             <motion.div variants={itemVariants}>
               <Card>
+                <CardHeader>
+                  <CardTitle>Relationship Health Trend</CardTitle>
+                </CardHeader>
                 <CardContent>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    Relationship Health Trend
-                  </Typography>
-                  <Box sx={{ height: 300 }}>
+                  <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={relationshipHealthData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -291,28 +250,28 @@ const Dashboard = () => {
                         <Line
                           type="monotone"
                           dataKey="score"
-                          stroke="#6366f1"
+                          stroke="hsl(var(--primary))"
                           strokeWidth={3}
-                          dot={{ fill: '#6366f1', strokeWidth: 2, r: 6 }}
+                          dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 6 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
-          </Grid>
+          </div>
 
           {/* Sidebar */}
-          <Grid item xs={12} md={4}>
+          <div className="lg:col-span-1">
             {/* Communication Breakdown */}
             <motion.div variants={itemVariants}>
-              <Card sx={{ mb: 3 }}>
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Communication Quality</CardTitle>
+                </CardHeader>
                 <CardContent>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    Communication Quality
-                  </Typography>
-                  <Box sx={{ height: 200 }}>
+                  <div className="h-52">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -331,28 +290,21 @@ const Dashboard = () => {
                         <Tooltip />
                       </PieChart>
                     </ResponsiveContainer>
-                  </Box>
-                  <Box sx={{ mt: 2 }}>
+                  </div>
+                  <div className="mt-4 space-y-2">
                     {communicationBreakdown.map((item) => (
-                      <Box key={item.name} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Box
-                          sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            bgcolor: item.color,
-                            mr: 1,
-                          }}
-                        />
-                        <Typography variant="body2" sx={{ flexGrow: 1 }}>
-                          {item.name}
-                        </Typography>
-                        <Typography variant="body2" fontWeight={600}>
-                          {item.value}%
-                        </Typography>
-                      </Box>
+                      <div key={item.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="text-sm">{item.name}</span>
+                        </div>
+                        <span className="text-sm font-semibold">{item.value}%</span>
+                      </div>
                     ))}
-                  </Box>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -360,40 +312,34 @@ const Dashboard = () => {
             {/* Recent Insights */}
             <motion.div variants={itemVariants}>
               <Card>
+                <CardHeader>
+                  <CardTitle>Recent Insights</CardTitle>
+                </CardHeader>
                 <CardContent>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    Recent Insights
-                  </Typography>
-                  <List>
+                  <div className="space-y-4">
                     {recentInsights.map((insight) => (
-                      <ListItem key={insight.id} sx={{ px: 0 }}>
-                        <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: 'transparent' }}>
-                            {getInsightIcon(insight.type)}
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={insight.title}
-                          secondary={
-                            <>
-                              <Typography variant="body2" color="text.secondary">
-                                {insight.description}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {insight.time}
-                              </Typography>
-                            </>
-                          }
-                        />
-                      </ListItem>
+                      <div key={insight.id} className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                          {getInsightIcon(insight.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-semibold mb-1">{insight.title}</h4>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            {insight.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {insight.time}
+                          </p>
+                        </div>
+                      </div>
                     ))}
-                  </List>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
-          </Grid>
-        </Grid>
-      </Box>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 };

@@ -1,0 +1,112 @@
+{
+  "quantitative_analysis": {
+    "sus": {
+      "calculate_subscales": true,
+      "include_confidence_intervals": true,
+      "comparison_benchmark": 68
+    },
+    "nps": {
+      "promoter_threshold": 9,
+      "detractor_threshold": 6,
+      "comparison_benchmark": 30
+    },
+    "task_completion": {
+      "success_threshold": 0.85,
+      "time_outlier_threshold": 2.0,
+      "error_severity_weights": {
+        "critical": 3,
+        "major": 2,
+        "minor": 1
+      }
+    },
+    "satisfaction_ratings": {
+      "aggregation_method": "mean",
+      "include_standard_deviation": true,
+      "minimum_responses": 5
+    },
+    "segmentation": {
+      "user_profiles": true,
+      "platforms": true,
+      "technical_proficiency": true,
+      "demographics": false
+    }
+  },
+  "qualitative_analysis": {
+    "coding_framework": {
+      "usability": [
+        "navigation",
+        "learnability",
+        "efficiency",
+        "memorability",
+        "errors",
+        "satisfaction"
+      ],
+      "suggestions": [
+        "relevance",
+        "timing",
+        "quality",
+        "usefulness",
+        "presentation"
+      ],
+      "integration": ["detection", "display", "performance", "compatibility"],
+      "impact": [
+        "communication_improvement",
+        "relationship_outcomes",
+        "learning",
+        "confidence"
+      ]
+    },
+    "sentiment_analysis": {
+      "enabled": true,
+      "categories": ["positive", "negative", "neutral", "mixed"]
+    },
+    "theme_extraction": {
+      "minimum_frequency": 3,
+      "cross_participant_validation": true
+    }
+  },
+  "prioritization": {
+    "impact_levels": {
+      "high": {
+        "affected_users": 0.3,
+        "severity": "blocks_core_functionality"
+      },
+      "medium": {
+        "affected_users": 0.15,
+        "severity": "impacts_key_features"
+      },
+      "low": {
+        "affected_users": 0.05,
+        "severity": "minor_inconvenience"
+      }
+    },
+    "effort_levels": {
+      "high": {
+        "development_time": "weeks",
+        "complexity": "architectural_change"
+      },
+      "medium": {
+        "development_time": "days",
+        "complexity": "feature_modification"
+      },
+      "low": {
+        "development_time": "hours",
+        "complexity": "simple_fix"
+      }
+    }
+  },
+  "reporting_thresholds": {
+    "include_in_strengths": {
+      "satisfaction": 4.0,
+      "positive_mentions": 5
+    },
+    "include_in_issues": {
+      "affected_users": 0.1,
+      "severity": "impacts_experience"
+    },
+    "include_in_recommendations": {
+      "impact": "medium",
+      "effort": "medium"
+    }
+  }
+}

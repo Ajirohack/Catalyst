@@ -491,3 +491,135 @@ async def analysis_health_check():
         "total_analyses": len(analysis_history),
         "timestamp": datetime.utcnow().isoformat()
     }
+
+@router.post("/whisper-stream", summary="Get Real-time Whisper Coaching")
+async def get_whisper_stream(whisper_message: WhisperMessage):
+    """
+    Get real-time whisper coaching suggestions based on message context.
+    
+    - **context**: The current message text or conversation context
+    - **conversation**: List of previous messages for conversation history
+    - **project_id**: ID of the active project
+    - **platform**: The messaging platform (whatsapp, messenger, etc.)
+    - **urgency**: Priority level for the coaching (normal, urgent, etc.)
+    - **frequency**: How often suggestions should be made (low, medium, high)
+    - **previous_suggestions**: List of previously given suggestions
+    """
+    try:
+        # Validate input
+        if not whisper_message.context or len(whisper_message.context.strip()) == 0:
+            raise HTTPException(status_code=400, detail="Context cannot be empty")
+        
+        # Process whisper suggestion
+        whisper_result = await whisper_service.whisper_stream(
+            message=whisper_message.context,
+            context={
+                "conversation": whisper_message.conversation,
+                "project_id": whisper_message.project_id,
+                "platform": whisper_message.platform,
+                "urgency": whisper_message.urgency,
+                "frequency": whisper_message.frequency,
+                "previous_suggestions": whisper_message.previous_suggestions
+            }
+        )
+        
+        # Create response
+        response = {
+            "status": "success",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "project_id": whisper_message.project_id,
+            "platform": whisper_message.platform,
+            "text": whisper_result,
+            "metadata": {
+                "urgency": whisper_message.urgency,
+                "frequency": whisper_message.frequency
+            }
+        }
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Whisper generation failed: {str(e)}")
+
+@router.websocket("/whisper-ws/{session_id}")
+async def whisper_websocket(websocket: WebSocket, session_id: str):
+    """
+    WebSocket endpoint for real-time whisper coaching.
+    
+    - **session_id**: Unique session identifier
+    """
+    try:
+        await manager.connect(websocket, session_id)
+        
+        # Send connection confirmation
+        await manager.send_personal_message({
+            "type": "connection_status",
+            "status": "connected",
+            "session_id": session_id,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }, session_id)
+        
+        # Keep connection alive
+        while True:
+            try:
+                # Receive message
+                data = await websocket.receive_text()
+                message_data = json.loads(data)
+                
+                # Process message
+                if message_data.get("type") == "whisper_request":
+                    # Get whisper suggestion
+                    context = message_data.get("context", "")
+                    platform = message_data.get("platform", "unknown")
+                    project_id = message_data.get("project_id", "")
+                    
+                    # Generate whisper
+                    whisper_result = await whisper_service.whisper_stream(
+                        message=context,
+                        context={
+                            "conversation": message_data.get("conversation", []),
+                            "project_id": project_id,
+                            "platform": platform,
+                            "urgency": message_data.get("urgency", "normal"),
+                            "frequency": message_data.get("frequency", "medium")
+                        }
+                    )
+                    
+                    # Send whisper back to client
+                    await manager.send_personal_message({
+                        "type": "whisper_response",
+                        "text": whisper_result,
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "project_id": project_id,
+                        "platform": platform
+                    }, session_id)
+                
+                # Update session info
+                if session_id in manager.user_sessions:
+                    manager.user_sessions[session_id]["message_count"] += 1
+                    manager.user_sessions[session_id]["last_activity"] = datetime.utcnow()
+                
+            except WebSocketDisconnect:
+                manager.disconnect(session_id)
+                break
+            except json.JSONDecodeError:
+                await manager.send_personal_message({
+                    "type": "error",
+                    "error": "Invalid JSON message"
+                }, session_id)
+            except Exception as e:
+                await manager.send_personal_message({
+                    "type": "error",
+                    "error": f"Error processing message: {str(e)}"
+                }, session_id)
+                
+    except WebSocketDisconnect:
+        manager.disconnect(session_id)
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        try:
+            manager.disconnect(session_id)
+        except:
+            pass

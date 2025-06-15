@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: catalyst-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - PYTHONPATH=/app
+    volumes:
+      # Mount for development (optional - remove for production)
+      - ./backend:/app
+      # Persistent storage for logs and data
+      - catalyst_data:/app/data
+      - catalyst_logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - catalyst-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add Redis for caching (uncomment if needed)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: catalyst-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - catalyst_redis:/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - catalyst-network
+
+  # Optional: Add PostgreSQL database (uncomment if needed)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: catalyst-postgres
+  #   environment:
+  #     POSTGRES_DB: catalyst
+  #     POSTGRES_USER: catalyst_user
+  #     POSTGRES_PASSWORD: catalyst_password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - catalyst_postgres:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - catalyst-network
+
+volumes:
+  catalyst_data:
+  catalyst_logs:
+  # catalyst_redis:
+  # catalyst_postgres:
+
+networks:
+  catalyst-network:
+    driver: bridge

@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Create logs directory if it doesn't exist
 LOGS_DIR = Path("logs")
-LOGS_DIR.mkdir(exist_ok=True)
+LOGS_DIR.mkdir(exist_ok=True, mode=0o755)
 
 LOGGING_CONFIG = {
     "version": 1,

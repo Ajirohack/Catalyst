@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catalyst Whisper Coach</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        width: 350px;
+        margin: 0;
+        padding: 0;
+        background: #f9f9f9;
+        color: #333;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 45px;
+        height: 24px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.3);
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #4caf50;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(21px);
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .section {
+        margin-bottom: 20px;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .suggestion {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        position: relative;
+      }
+
+      .suggestion-text {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .suggestion-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .suggestion-time {
+        color: #888;
+      }
+
+      .suggestion-platform {
+        background: #f1f1f1;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+
+      .suggestion-action {
+        margin-top: 10px;
+      }
+
+      .btn {
+        display: inline-block;
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      .btn:hover {
+        background: #45a049;
+      }
+
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .btn-small {
+        font-size: 11px;
+        padding: 4px 8px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 30px 20px;
+        color: #666;
+      }
+
+      .empty-state svg,
+      .empty-state img {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 15px;
+        opacity: 0.4;
+      }
+
+      .empty-state-message {
+        margin: 0 0 15px 0;
+        font-size: 14px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 20px;
+      }
+
+      .loading-spinner {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border: 3px solid rgba(102, 126, 234, 0.2);
+        border-radius: 50%;
+        border-top-color: #667eea;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .tabs {
+        display: flex;
+        background: #f5f5f5;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        overflow: hidden;
+      }
+
+      .tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .tab.active {
+        background: #667eea;
+        color: white;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .no-suggestions {
+        text-align: center;
+        padding: 30px 0;
+        color: #666;
+      }
+
+      .get-suggestion-btn {
+        display: block;
+        width: 100%;
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s;
+        margin-top: 15px;
+      }
+
+      .get-suggestion-btn:hover {
+        background: #5a6fd6;
+      }
+
+      .footer {
+        text-align: center;
+        padding: 15px 0 5px;
+        font-size: 12px;
+        color: #888;
+        border-top: 1px solid #eee;
+        margin-top: 15px;
+      }
+
+      .footer a {
+        color: #667eea;
+        text-decoration: none;
+      }
+
+      .refresh-btn {
+        background: none;
+        border: none;
+        color: #667eea;
+        cursor: pointer;
+        font-size: 20px;
+        padding: 0;
+        margin: 0;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+      }
+
+      .refresh-btn:hover {
+        color: #5a6fd6;
+      }
+
+      .settings-form {
+        padding: 10px 0;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        font-size: 13px;
+      }
+
+      .form-group select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+
+      .history-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .history-text {
+        font-size: 13px;
+        margin: 0 0 5px 0;
+      }
+
+      .history-meta {
+        font-size: 11px;
+        color: #888;
+      }
+
+      .clear-history-btn {
+        display: block;
+        width: 100%;
+        background: #f5f5f5;
+        color: #666;
+        border: none;
+        padding: 8px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        margin-top: 10px;
+      }
+
+      .clear-history-btn:hover {
+        background: #e0e0e0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Catalyst Whisper Coach</h1>
+      <label class="toggle-switch">
+        <input type="checkbox" id="enableToggle" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="suggestions">Suggestions</div>
+      <div class="tab" data-tab="history">History</div>
+      <div class="tab" data-tab="settings">Settings</div>
+    </div>
+
+    <div class="tab-content active" id="suggestions-tab">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Active Suggestions</h2>
+            <button id="refresh-btn" class="btn btn-small">Refresh</button>
+          </div>
+
+          <div id="suggestions-container">
+            <div class="loading">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Request Suggestion</h2>
+          </div>
+
+          <textarea
+            id="context-input"
+            placeholder="Enter conversation context..."
+            style="
+              width: 100%;
+              height: 80px;
+              padding: 10px;
+              border-radius: 8px;
+              border: 1px solid #ddd;
+              margin-bottom: 10px;
+              font-family: inherit;
+              resize: none;
+            "
+          ></textarea>
+
+          <button id="get-suggestion-btn" class="btn" style="width: 100%">
+            Get Suggestion
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="history-tab">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <h2 class="section-title">Suggestion History</h2>
+            <button id="clear-history-btn" class="btn btn-small btn-secondary">
+              Clear
+            </button>
+          </div>
+
+          <div id="history-container">
+            <div class="loading">
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="settings-tab">
+      <div class="container">
+        <div class="settings-group">
+          <h3>General Settings</h3>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Auto Analysis</div>
+              <div class="setting-description">
+                Automatically analyze messages
+              </div>
+            </div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="autoAnalysisToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Real-time Coaching</div>
+              <div class="setting-description">
+                Show suggestions in real-time
+              </div>
+            </div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="realTimeCoachingToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Privacy Mode</div>
+              <div class="setting-description">Limit data sent to server</div>
+            </div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="privacyModeToggle" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Analysis Frequency</div>
+              <div class="setting-description">
+                How often to analyze messages
+              </div>
+            </div>
+            <select id="analysisFrequencySelect">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Whisper Settings</h3>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Auto Display Whispers</div>
+              <div class="setting-description">Show whispers automatically</div>
+            </div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="autoDisplayToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Display Duration</div>
+              <div class="setting-description">
+                How long whispers stay visible
+              </div>
+            </div>
+            <select id="displayDurationSelect">
+              <option value="5">5 seconds</option>
+              <option value="10" selected>10 seconds</option>
+              <option value="15">15 seconds</option>
+              <option value="30">30 seconds</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Display Mode</div>
+              <div class="setting-description">How whispers are displayed</div>
+            </div>
+            <select id="displayModeSelect">
+              <option value="widget" selected>Widget</option>
+              <option value="popup">Popup</option>
+              <option value="inline">Inline</option>
+            </select>
+          </div>
+
+          <div class="setting-item">
+            <div>
+              <div class="setting-label">Whisper Frequency</div>
+              <div class="setting-description">How often to show whispers</div>
+            </div>
+            <select id="whisperFrequencySelect">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Supported Platforms</h3>
+
+          <div class="setting-item">
+            <div class="setting-label">WhatsApp Web</div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="whatsappToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">Facebook Messenger</div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="messengerToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">Instagram DMs</div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="instagramToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">Discord</div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="discordToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">Slack</div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="slackToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">Microsoft Teams</div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="teamsToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-label">Telegram</div>
+            <label class="toggle-switch" style="transform: scale(0.8)">
+              <input type="checkbox" id="telegramToggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <button
+          id="save-settings-btn"
+          class="btn"
+          style="width: 100%; margin-top: 10px"
+        >
+          Save Settings
+        </button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Catalyst Whisper Coach v1.0.0</div>
+      <div>© 2025 Catalyst. All rights reserved.</div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

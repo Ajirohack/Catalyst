@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catalyst Whisper Coach - Options</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f9f9f9;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 0;
+        margin-bottom: 30px;
+      }
+
+      .header-content {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 500;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        background: #f5f5f5;
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .card-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #4caf50;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      select,
+      input[type="text"],
+      input[type="number"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      select {
+        height: 40px;
+      }
+
+      .btn {
+        display: inline-block;
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+
+      .btn:hover {
+        background: #45a049;
+      }
+
+      .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      .platform-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .platform-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <h1>Catalyst Whisper Coach - Options</h1>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="success-message" id="successMessage"></div>
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">General Settings</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="enableToggle">
+              <div class="toggle-switch">
+                <input type="checkbox" id="enableToggle" />
+                <span class="slider"></span>
+              </div>
+              Enable Whisper Coach
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="autoAnalysisToggle">
+              <div class="toggle-switch">
+                <input type="checkbox" id="autoAnalysisToggle" />
+                <span class="slider"></span>
+              </div>
+              Automatic Message Analysis
+            </label>
+            <p>
+              Automatically analyze messages as they appear in conversations.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="realTimeCoachingToggle">
+              <div class="toggle-switch">
+                <input type="checkbox" id="realTimeCoachingToggle" />
+                <span class="slider"></span>
+              </div>
+              Real-time Coaching
+            </label>
+            <p>Receive real-time suggestions based on conversation flow.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="privacyModeToggle">
+              <div class="toggle-switch">
+                <input type="checkbox" id="privacyModeToggle" />
+                <span class="slider"></span>
+              </div>
+              Privacy Mode
+            </label>
+            <p>
+              Limit data sent to server for analysis (may reduce suggestion
+              quality).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Whisper Settings</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="analysisFrequency">Analysis Frequency</label>
+            <select id="analysisFrequency">
+              <option value="low">Low - Less frequent analysis</option>
+              <option value="medium">Medium - Balanced frequency</option>
+              <option value="high">High - More frequent analysis</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="autoDisplayToggle">
+              <div class="toggle-switch">
+                <input type="checkbox" id="autoDisplayToggle" />
+                <span class="slider"></span>
+              </div>
+              Auto-display Whispers
+            </label>
+            <p>Automatically show whisper suggestions when available.</p>
+          </div>
+
+          <div class="form-group">
+            <label for="displayDuration">Display Duration (seconds)</label>
+            <input
+              type="number"
+              id="displayDuration"
+              min="3"
+              max="30"
+              step="1"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="displayMode">Display Mode</label>
+            <select id="displayMode">
+              <option value="widget">Widget - Floating overlay</option>
+              <option value="popup">Popup - Browser notification</option>
+              <option value="inline">Inline - Within the conversation</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="whisperFrequency">Whisper Frequency</label>
+            <select id="whisperFrequency">
+              <option value="low">Low - Only critical moments</option>
+              <option value="medium">Medium - Balanced frequency</option>
+              <option value="high">High - More frequent suggestions</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Supported Platforms</h2>
+        </div>
+        <div class="card-body">
+          <div class="platform-list">
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-whatsapp" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-whatsapp">WhatsApp Web</label>
+            </div>
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-messenger" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-messenger">Facebook Messenger</label>
+            </div>
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-instagram" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-instagram">Instagram DMs</label>
+            </div>
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-facebook" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-facebook">Facebook Chat</label>
+            </div>
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-discord" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-discord">Discord</label>
+            </div>
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-slack" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-slack">Slack</label>
+            </div>
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-teams" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-teams">Microsoft Teams</label>
+            </div>
+            <div class="platform-item">
+              <div class="toggle-switch">
+                <input type="checkbox" id="platform-telegram" />
+                <span class="slider"></span>
+              </div>
+              <label for="platform-telegram">Telegram</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Notification Settings</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="notifications-insights">
+              <div class="toggle-switch">
+                <input type="checkbox" id="notifications-insights" />
+                <span class="slider"></span>
+              </div>
+              Insights Notifications
+            </label>
+            <p>Receive notifications for new conversation insights.</p>
+          </div>
+          <div class="form-group">
+            <label for="notifications-goals">
+              <div class="toggle-switch">
+                <input type="checkbox" id="notifications-goals" />
+                <span class="slider"></span>
+              </div>
+              Goals Notifications
+            </label>
+            <p>Receive notifications for goal progress and achievements.</p>
+          </div>
+          <div class="form-group">
+            <label for="notifications-milestones">
+              <div class="toggle-switch">
+                <input type="checkbox" id="notifications-milestones" />
+                <span class="slider"></span>
+              </div>
+              Milestone Notifications
+            </label>
+            <p>Receive notifications for relationship milestones.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="resetBtn" class="btn btn-secondary">
+          Reset to Defaults
+        </button>
+        <button id="saveBtn" class="btn">Save Settings</button>
+      </div>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,103 @@
+{
+  "testing": {
+    "alpha_phase": {
+      "start_date": "2025-06-22",
+      "end_date": "2025-07-05",
+      "min_participants": 5,
+      "max_participants": 8
+    },
+    "beta_phase": {
+      "start_date": "2025-07-06",
+      "end_date": "2025-08-02",
+      "min_participants": 30,
+      "max_participants": 50
+    }
+  },
+  "participants": {
+    "profiles": {
+      "relationship_coaches": {
+        "percentage": 20,
+        "required_platforms": ["WhatsApp", "Messenger"]
+      },
+      "active_daters": {
+        "percentage": 30,
+        "required_platforms": ["WhatsApp", "Instagram"]
+      },
+      "couples": {
+        "percentage": 25,
+        "required_platforms": ["WhatsApp", "Messenger"]
+      },
+      "communication_students": {
+        "percentage": 15,
+        "required_platforms": ["Discord", "Slack"]
+      },
+      "general_users": {
+        "percentage": 10,
+        "required_platforms": []
+      }
+    },
+    "technical_proficiency": {
+      "beginner": 30,
+      "intermediate": 50,
+      "advanced": 20
+    }
+  },
+  "platforms": {
+    "WhatsApp": {
+      "priority": 1,
+      "min_testers": 20
+    },
+    "Messenger": {
+      "priority": 2,
+      "min_testers": 15
+    },
+    "Instagram": {
+      "priority": 2,
+      "min_testers": 15
+    },
+    "Discord": {
+      "priority": 3,
+      "min_testers": 10
+    },
+    "Slack": {
+      "priority": 3,
+      "min_testers": 10
+    },
+    "Teams": {
+      "priority": 4,
+      "min_testers": 5
+    },
+    "Telegram": {
+      "priority": 4,
+      "min_testers": 5
+    }
+  },
+  "success_criteria": {
+    "sus_score": {
+      "threshold": 70,
+      "weight": 3
+    },
+    "nps": {
+      "threshold": 30,
+      "weight": 2
+    },
+    "task_completion": {
+      "threshold": 85,
+      "weight": 3
+    },
+    "feature_satisfaction": {
+      "threshold": 4.0,
+      "weight": 2
+    },
+    "critical_issues": {
+      "max_allowed": 5,
+      "weight": 4
+    }
+  },
+  "reporting": {
+    "formats": ["markdown", "html", "pdf"],
+    "weekly_updates": true,
+    "executive_summary_length": "2 pages",
+    "include_raw_data": false
+  }
+}

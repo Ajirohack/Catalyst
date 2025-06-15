@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -23,18 +23,18 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Alert,
-} from '@mui/material';
+  // Removed unused imports:
+  // FormControl,
+  // InputLabel,
+  // Select,
+  // MenuItem,
+  // Alert,
+} from "@mui/material";
 import {
   ArrowBack as BackIcon,
   Edit as EditIcon,
   PlayArrow as PlayIcon,
   Pause as PauseIcon,
-  Timeline as TimelineIcon,
   Analytics as AnalyticsIcon,
   Group as GroupIcon,
   Flag as GoalIcon,
@@ -44,11 +44,23 @@ import {
   CheckCircle as CheckIcon,
   RadioButtonUnchecked as UncheckIcon,
   Add as AddIcon,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import { useNavigate, useParams } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import toast from 'react-hot-toast';
+  // Removed unused import:
+  // Timeline as TimelineIcon,
+} from "@mui/icons-material";
+import { motion } from "framer-motion";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
+import toast from "react-hot-toast";
 
 const ProjectDetails = () => {
   const navigate = useNavigate();
@@ -56,99 +68,115 @@ const ProjectDetails = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [addGoalDialogOpen, setAddGoalDialogOpen] = useState(false);
-  const [newGoal, setNewGoal] = useState('');
+  const [newGoal, setNewGoal] = useState("");
 
   // Mock project data - in real app, this would come from API
   const [project, setProject] = useState({
     id: parseInt(projectId),
-    name: 'Improving Communication',
-    description: 'Working on better daily communication patterns with my partner',
+    name: "Improving Communication",
+    description:
+      "Working on better daily communication patterns with my partner",
     participants: [
-      { name: 'Alice', role: 'Partner', avatar: 'A' },
-      { name: 'Bob', role: 'Partner', avatar: 'B' }
+      { name: "Alice", role: "Partner", avatar: "A" },
+      { name: "Bob", role: "Partner", avatar: "B" },
     ],
-    status: 'active',
+    status: "active",
     progress: 75,
-    projectType: 'romantic',
-    createdAt: '2024-01-10',
-    lastActivity: '2 hours ago',
+    projectType: "romantic",
+    createdAt: "2024-01-10",
+    lastActivity: "2 hours ago",
     analysisCount: 12,
     goals: [
-      { id: 1, text: 'Reduce misunderstandings', completed: true },
-      { id: 2, text: 'Increase quality time', completed: false },
-      { id: 3, text: 'Better conflict resolution', completed: false },
-      { id: 4, text: 'Practice active listening', completed: true },
+      { id: 1, text: "Reduce misunderstandings", completed: true },
+      { id: 2, text: "Increase quality time", completed: false },
+      { id: 3, text: "Better conflict resolution", completed: false },
+      { id: 4, text: "Practice active listening", completed: true },
     ],
     insights: [
       {
         id: 1,
-        type: 'positive',
-        title: 'Communication Improvement',
-        description: 'Your response time has improved by 40% this week',
-        date: '2024-01-15',
-        category: 'responsiveness'
+        type: "positive",
+        title: "Communication Improvement",
+        description: "Your response time has improved by 40% this week",
+        date: "2024-01-15",
+        category: "responsiveness",
       },
       {
         id: 2,
-        type: 'suggestion',
-        title: 'Emotional Tone',
-        description: 'Consider using more positive language in evening conversations',
-        date: '2024-01-14',
-        category: 'tone'
+        type: "suggestion",
+        title: "Emotional Tone",
+        description:
+          "Consider using more positive language in evening conversations",
+        date: "2024-01-14",
+        category: "tone",
       },
       {
         id: 3,
-        type: 'milestone',
-        title: 'Weekly Goal Achieved',
-        description: 'Successfully completed 5 meaningful conversations this week',
-        date: '2024-01-13',
-        category: 'goals'
-      }
+        type: "milestone",
+        title: "Weekly Goal Achieved",
+        description:
+          "Successfully completed 5 meaningful conversations this week",
+        date: "2024-01-13",
+        category: "goals",
+      },
     ],
     progressData: [
-      { date: 'Jan 1', score: 60, messages: 45 },
-      { date: 'Jan 8', score: 65, messages: 52 },
-      { date: 'Jan 15', score: 72, messages: 48 },
-      { date: 'Jan 22', score: 75, messages: 55 },
+      { date: "Jan 1", score: 60, messages: 45 },
+      { date: "Jan 8", score: 65, messages: 52 },
+      { date: "Jan 15", score: 72, messages: 48 },
+      { date: "Jan 22", score: 75, messages: 55 },
     ],
     communicationMetrics: [
-      { category: 'Positive Tone', value: 78 },
-      { category: 'Response Time', value: 85 },
-      { category: 'Active Listening', value: 72 },
-      { category: 'Conflict Resolution', value: 68 },
-    ]
+      { category: "Positive Tone", value: 78 },
+      { category: "Response Time", value: 85 },
+      { category: "Active Listening", value: 72 },
+      { category: "Conflict Resolution", value: 68 },
+    ],
   });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'success';
-      case 'paused': return 'warning';
-      case 'completed': return 'info';
-      default: return 'default';
+      case "active":
+        return "success";
+      case "paused":
+        return "warning";
+      case "completed":
+        return "info";
+      default:
+        return "default";
     }
   };
 
   const getProjectTypeIcon = (type) => {
     switch (type) {
-      case 'romantic': return '💕';
-      case 'family': return '👨‍👩‍👧‍👦';
-      case 'friendship': return '👫';
-      case 'professional': return '🤝';
-      default: return '🌟';
+      case "romantic":
+        return "💕";
+      case "family":
+        return "👨‍👩‍👧‍👦";
+      case "friendship":
+        return "👫";
+      case "professional":
+        return "🤝";
+      default:
+        return "🌟";
     }
   };
 
   const getInsightIcon = (type) => {
     switch (type) {
-      case 'positive': return <TrendIcon color="success" />;
-      case 'suggestion': return <InsightIcon color="warning" />;
-      case 'milestone': return <CheckIcon color="info" />;
-      default: return <MessageIcon />;
+      case "positive":
+        return <TrendIcon color="success" />;
+      case "suggestion":
+        return <InsightIcon color="warning" />;
+      case "milestone":
+        return <CheckIcon color="info" />;
+      default:
+        return <MessageIcon />;
     }
   };
 
   const handleStatusToggle = () => {
-    const newStatus = project.status === 'active' ? 'paused' : 'active';
+    const newStatus = project.status === "active" ? "paused" : "active";
     setProject({ ...project, status: newStatus });
     toast.success(`Project ${newStatus}`);
   };
@@ -156,9 +184,9 @@ const ProjectDetails = () => {
   const handleGoalToggle = (goalId) => {
     setProject({
       ...project,
-      goals: project.goals.map(goal =>
+      goals: project.goals.map((goal) =>
         goal.id === goalId ? { ...goal, completed: !goal.completed } : goal
-      )
+      ),
     });
   };
 
@@ -167,19 +195,19 @@ const ProjectDetails = () => {
       const newGoalObj = {
         id: Date.now(),
         text: newGoal.trim(),
-        completed: false
+        completed: false,
       };
       setProject({
         ...project,
-        goals: [...project.goals, newGoalObj]
+        goals: [...project.goals, newGoalObj],
       });
-      setNewGoal('');
+      setNewGoal("");
       setAddGoalDialogOpen(false);
-      toast.success('Goal added successfully');
+      toast.success("Goal added successfully");
     }
   };
 
-  const completedGoals = project.goals.filter(goal => goal.completed).length;
+  const completedGoals = project.goals.filter((goal) => goal.completed).length;
   const goalProgress = (completedGoals / project.goals.length) * 100;
 
   const containerVariants = {
@@ -210,16 +238,12 @@ const ProjectDetails = () => {
   );
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <Box sx={{ maxWidth: 1200, mx: "auto" }}>
         {/* Header */}
         <motion.div variants={itemVariants}>
-          <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <IconButton onClick={() => navigate('/continue-project')}>
+          <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 2 }}>
+            <IconButton onClick={() => navigate("/continue-project")}>
               <BackIcon />
             </IconButton>
             <Box sx={{ flexGrow: 1 }}>
@@ -230,7 +254,7 @@ const ProjectDetails = () => {
                 {project.description}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: "flex", gap: 1 }}>
               <Button
                 variant="outlined"
                 startIcon={<EditIcon />}
@@ -240,11 +264,13 @@ const ProjectDetails = () => {
               </Button>
               <Button
                 variant="contained"
-                startIcon={project.status === 'active' ? <PauseIcon /> : <PlayIcon />}
+                startIcon={
+                  project.status === "active" ? <PauseIcon /> : <PlayIcon />
+                }
                 onClick={handleStatusToggle}
-                color={project.status === 'active' ? 'warning' : 'success'}
+                color={project.status === "active" ? "warning" : "success"}
               >
-                {project.status === 'active' ? 'Pause' : 'Resume'}
+                {project.status === "active" ? "Pause" : "Resume"}
               </Button>
             </Box>
           </Box>
@@ -255,7 +281,7 @@ const ProjectDetails = () => {
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} md={3}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <Chip
                     label={project.status}
                     color={getStatusColor(project.status)}
@@ -277,7 +303,7 @@ const ProjectDetails = () => {
             </Grid>
             <Grid item xs={12} md={3}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <AnalyticsIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h6" fontWeight="bold">
                     {project.analysisCount}
@@ -290,7 +316,7 @@ const ProjectDetails = () => {
             </Grid>
             <Grid item xs={12} md={3}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <GoalIcon color="success" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h6" fontWeight="bold">
                     {completedGoals}/{project.goals.length}
@@ -309,7 +335,7 @@ const ProjectDetails = () => {
             </Grid>
             <Grid item xs={12} md={3}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <GroupIcon color="info" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h6" fontWeight="bold">
                     {project.participants.length}
@@ -326,8 +352,11 @@ const ProjectDetails = () => {
         {/* Tabs */}
         <motion.div variants={itemVariants}>
           <Card>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+              <Tabs
+                value={activeTab}
+                onChange={(e, newValue) => setActiveTab(newValue)}
+              >
                 <Tab label="Overview" />
                 <Tab label="Goals" />
                 <Tab label="Analytics" />
@@ -354,7 +383,7 @@ const ProjectDetails = () => {
                         dataKey="score"
                         stroke="#1976d2"
                         strokeWidth={3}
-                        dot={{ fill: '#1976d2', strokeWidth: 2, r: 6 }}
+                        dot={{ fill: "#1976d2", strokeWidth: 2, r: 6 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -398,9 +427,17 @@ const ProjectDetails = () => {
 
             {/* Goals Tab */}
             <TabPanel value={activeTab} index={1}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
                 <Typography variant="h6">
-                  Project Goals ({completedGoals}/{project.goals.length} completed)
+                  Project Goals ({completedGoals}/{project.goals.length}{" "}
+                  completed)
                 </Typography>
                 <Button
                   variant="contained"
@@ -415,9 +452,11 @@ const ProjectDetails = () => {
                   <React.Fragment key={goal.id}>
                     <ListItem
                       sx={{
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: 'action.hover' },
-                        textDecoration: goal.completed ? 'line-through' : 'none',
+                        cursor: "pointer",
+                        "&:hover": { bgcolor: "action.hover" },
+                        textDecoration: goal.completed
+                          ? "line-through"
+                          : "none",
                         opacity: goal.completed ? 0.7 : 1,
                       }}
                       onClick={() => handleGoalToggle(goal.id)}
@@ -469,7 +508,7 @@ const ProjectDetails = () => {
                         dataKey="messages"
                         stroke="#2e7d32"
                         strokeWidth={3}
-                        dot={{ fill: '#2e7d32', strokeWidth: 2, r: 6 }}
+                        dot={{ fill: "#2e7d32", strokeWidth: 2, r: 6 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -486,18 +525,41 @@ const ProjectDetails = () => {
                 {project.insights.map((insight) => (
                   <Grid item xs={12} key={insight.id}>
                     <Paper sx={{ p: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 2,
+                        }}
+                      >
                         {getInsightIcon(insight.type)}
                         <Box sx={{ flexGrow: 1 }}>
                           <Typography variant="subtitle1" fontWeight="bold">
                             {insight.title}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1 }}
+                          >
                             {insight.description}
                           </Typography>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Chip label={insight.category} size="small" variant="outlined" />
-                            <Typography variant="caption" color="text.secondary">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Chip
+                              label={insight.category}
+                              size="small"
+                              variant="outlined"
+                            />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {insight.date}
                             </Typography>
                           </Box>
@@ -518,8 +580,16 @@ const ProjectDetails = () => {
                 {project.participants.map((participant, index) => (
                   <Grid item xs={12} sm={6} md={4} key={index}>
                     <Card>
-                      <CardContent sx={{ textAlign: 'center' }}>
-                        <Avatar sx={{ width: 64, height: 64, mx: 'auto', mb: 2, bgcolor: 'primary.main' }}>
+                      <CardContent sx={{ textAlign: "center" }}>
+                        <Avatar
+                          sx={{
+                            width: 64,
+                            height: 64,
+                            mx: "auto",
+                            mb: 2,
+                            bgcolor: "primary.main",
+                          }}
+                        >
                           {participant.avatar}
                         </Avatar>
                         <Typography variant="h6" fontWeight="bold">
@@ -538,7 +608,12 @@ const ProjectDetails = () => {
         </motion.div>
 
         {/* Add Goal Dialog */}
-        <Dialog open={addGoalDialogOpen} onClose={() => setAddGoalDialogOpen(false)} maxWidth="sm" fullWidth>
+        <Dialog
+          open={addGoalDialogOpen}
+          onClose={() => setAddGoalDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
           <DialogTitle>Add New Goal</DialogTitle>
           <DialogContent>
             <TextField
@@ -554,8 +629,56 @@ const ProjectDetails = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setAddGoalDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddGoal} variant="contained" disabled={!newGoal.trim()}>
+            <Button
+              onClick={handleAddGoal}
+              variant="contained"
+              disabled={!newGoal.trim()}
+            >
               Add Goal
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Edit Project Dialog */}
+        <Dialog
+          open={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Edit Project</DialogTitle>
+          <DialogContent>
+            <Box sx={{ pt: 2 }}>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Project Name"
+                fullWidth
+                variant="outlined"
+                defaultValue={project.name}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                margin="dense"
+                label="Description"
+                fullWidth
+                multiline
+                rows={3}
+                variant="outlined"
+                defaultValue={project.description}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                toast.success("Project updated successfully!");
+                setEditDialogOpen(false);
+              }}
+            >
+              Save Changes
             </Button>
           </DialogActions>
         </Dialog>

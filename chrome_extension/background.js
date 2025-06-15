@@ -6,7 +6,8 @@ const STORAGE_KEYS = {
   USER_SETTINGS: 'catalyst_user_settings',
   ACTIVE_PROJECT: 'catalyst_active_project',
   SESSION_DATA: 'catalyst_session_data',
-  API_TOKEN: 'catalyst_api_token'
+  API_TOKEN: 'catalyst_api_token',
+  WHISPER_HISTORY: 'catalyst_whisper_history'
 };
 
 // Default settings
@@ -19,6 +20,8 @@ const DEFAULT_SETTINGS = {
   supportedPlatforms: {
     whatsapp: true,
     messenger: true,
+    instagram: true,
+    facebook: true,
     discord: true,
     slack: true,
     teams: true,
@@ -28,17 +31,23 @@ const DEFAULT_SETTINGS = {
     insights: true,
     goals: true,
     milestones: true
+  },
+  whisperSettings: {
+    autoDisplay: true,
+    displayDuration: 10, // seconds
+    displayMode: 'widget', // widget, popup, inline
+    whisperFrequency: 'medium' // low, medium, high
   }
 };
 
 // Extension installation and updates
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('Catalyst extension installed/updated:', details.reason);
-  
+
   if (details.reason === 'install') {
     // First time installation
     await initializeExtension();
-    
+
     // Open welcome page
     chrome.tabs.create({
       url: chrome.runtime.getURL('welcome.html')
@@ -61,7 +70,7 @@ async function initializeExtension() {
         analysisCount: 0
       }
     });
-    
+
     console.log('Catalyst extension initialized successfully');
   } catch (error) {
     console.error('Failed to initialize extension:', error);
@@ -73,117 +82,90 @@ async function migrateSettings(previousVersion) {
   try {
     const result = await chrome.storage.sync.get([STORAGE_KEYS.USER_SETTINGS]);
     const currentSettings = result[STORAGE_KEYS.USER_SETTINGS] || {};
-    
+
     // Merge with new default settings
     const migratedSettings = { ...DEFAULT_SETTINGS, ...currentSettings };
-    
+
     await chrome.storage.sync.set({
       [STORAGE_KEYS.USER_SETTINGS]: migratedSettings
     });
-    
+
     console.log(`Settings migrated from version ${previousVersion}`);
   } catch (error) {
     console.error('Failed to migrate settings:', error);
   }
 }
 
-// Handle messages from content scripts and popup
+// Message handlers
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log('Background received message:', message.type);
-  
-  switch (message.type) {
-    case 'ANALYZE_MESSAGE':
-      handleMessageAnalysis(message.data, sender.tab.id)
-        .then(sendResponse)
-        .catch(error => sendResponse({ error: error.message }));
-      return true; // Keep message channel open for async response
-      
-    case 'GET_SETTINGS':
-      getSettings()
-        .then(sendResponse)
-        .catch(error => sendResponse({ error: error.message }));
-      return true;
-      
-    case 'UPDATE_SETTINGS':
-      updateSettings(message.data)
-        .then(sendResponse)
-        .catch(error => sendResponse({ error: error.message }));
-      return true;
-      
-    case 'GET_ACTIVE_PROJECT':
-      getActiveProject()
-        .then(sendResponse)
-        .catch(error => sendResponse({ error: error.message }));
-      return true;
-      
-    case 'SET_ACTIVE_PROJECT':
-      setActiveProject(message.data)
-        .then(sendResponse)
-        .catch(error => sendResponse({ error: error.message }));
-      return true;
-      
-    case 'GET_WHISPER_SUGGESTION':
-      getWhisperSuggestion(message.data)
-        .then(sendResponse)
-        .catch(error => sendResponse({ error: error.message }));
-      return true;
-      
-    case 'TRACK_EVENT':
-      trackEvent(message.data)
-        .then(sendResponse)
-        .catch(error => sendResponse({ error: error.message }));
-      return true;
-      
-    default:
-      console.warn('Unknown message type:', message.type);
-      sendResponse({ error: 'Unknown message type' });
-  }
+  (async () => {
+    try {
+      const { type, data } = message;
+
+      switch (type) {
+        // Settings related
+        case 'GET_SETTINGS':
+          sendResponse(await getSettings());
+          break;
+
+        case 'UPDATE_SETTINGS':
+          sendResponse(await updateSettings(data));
+          break;
+
+        // Project related
+        case 'GET_ACTIVE_PROJECT':
+          sendResponse(await getActiveProject());
+          break;
+
+        case 'SET_ACTIVE_PROJECT':
+          sendResponse(await setActiveProject(data));
+          break;
+
+        // Authentication related
+        case 'LOGIN_USER':
+          sendResponse(await loginUser(data));
+          break;
+
+        case 'LOGOUT_USER':
+          sendResponse(await logoutUser());
+          break;
+
+        case 'CHECK_AUTH':
+          sendResponse(await checkAuthentication());
+          break;
+
+        // Analysis related
+        case 'ANALYZE_MESSAGE':
+          sendResponse(await analyzeMessage(data));
+          break;
+
+        case 'ANALYZE_WHISPER':
+          sendResponse(await analyzeWhisper(data));
+          break;
+
+        case 'GET_WHISPER_HISTORY':
+          sendResponse(await getWhisperHistory());
+          break;
+
+        // Tracking
+        case 'TRACK_EVENT':
+          sendResponse(await trackEvent(data));
+          break;
+
+        default:
+          sendResponse({ error: 'Unknown message type' });
+      }
+    } catch (error) {
+      console.error('Error handling message:', error);
+      sendResponse({ error: error.message });
+    }
+  })();
+
+  // Return true to indicate an asynchronous response
+  return true;
 });
 
-// Analyze message content
-async function handleMessageAnalysis(messageData, tabId) {
-  try {
-    const settings = await getSettings();
-    
-    if (!settings.enabled || !settings.autoAnalysis) {
-      return { success: false, reason: 'Analysis disabled' };
-    }
-    
-    // Get active project
-    const activeProject = await getActiveProject();
-    if (!activeProject) {
-      return { success: false, reason: 'No active project' };
-    }
-    
-    // Send to Catalyst API for analysis
-    const analysisResult = await sendToAPI('/analysis/analyze', {
-      text: messageData.text,
-      sender: messageData.sender,
-      timestamp: messageData.timestamp,
-      platform: messageData.platform,
-      projectId: activeProject.id,
-      context: messageData.context
-    });
-    
-    // Update session data
-    await updateSessionData({
-      messageCount: 1,
-      analysisCount: 1
-    });
-    
-    // Send real-time coaching if enabled
-    if (settings.realTimeCoaching && analysisResult.suggestions) {
-      await sendWhisperToTab(tabId, analysisResult.suggestions);
-    }
-    
-    return { success: true, analysis: analysisResult };
-  } catch (error) {
-    console.error('Message analysis failed:', error);
-    return { success: false, error: error.message };
-  }
-}
-
-// Get user settings
+// Settings management
 async function getSettings() {
   try {
     const result = await chrome.storage.sync.get([STORAGE_KEYS.USER_SETTINGS]);
@@ -194,24 +176,36 @@ async function getSettings() {
   }
 }
 
-// Update user settings
-async function updateSettings(newSettings) {
+async function updateSettings(settings) {
   try {
     const currentSettings = await getSettings();
-    const updatedSettings = { ...currentSettings, ...newSettings };
-    
+    const updatedSettings = { ...currentSettings, ...settings };
+
     await chrome.storage.sync.set({
       [STORAGE_KEYS.USER_SETTINGS]: updatedSettings
     });
-    
+
+    // Notify all content scripts about settings update
+    const tabs = await chrome.tabs.query({});
+    tabs.forEach(tab => {
+      try {
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'SETTINGS_UPDATED',
+          data: { enabled: updatedSettings.enabled }
+        });
+      } catch (e) {
+        // Ignore errors for tabs that don't have content scripts
+      }
+    });
+
     return { success: true, settings: updatedSettings };
   } catch (error) {
     console.error('Failed to update settings:', error);
-    throw error;
+    return { error: error.message };
   }
 }
 
-// Get active project
+// Project management
 async function getActiveProject() {
   try {
     const result = await chrome.storage.sync.get([STORAGE_KEYS.ACTIVE_PROJECT]);
@@ -222,215 +216,419 @@ async function getActiveProject() {
   }
 }
 
-// Set active project
 async function setActiveProject(project) {
   try {
     await chrome.storage.sync.set({
       [STORAGE_KEYS.ACTIVE_PROJECT]: project
     });
-    
+
     return { success: true, project };
   } catch (error) {
     console.error('Failed to set active project:', error);
-    throw error;
+    return { error: error.message };
   }
 }
 
-// Get whisper suggestion from API
-async function getWhisperSuggestion(context) {
+// Authentication
+async function loginUser(credentials) {
   try {
-    const activeProject = await getActiveProject();
-    if (!activeProject) {
-      throw new Error('No active project');
+    const { email, password } = credentials;
+
+    // Call API for authentication
+    const response = await fetch(`${CATALYST_API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Authentication failed');
     }
-    
-    const suggestion = await sendToAPI('/analysis/whisper-stream', {
-      context: context.text,
-      sender: context.sender,
-      platform: context.platform,
-      projectId: activeProject.id,
-      urgency: context.urgency || 'normal'
+
+    const data = await response.json();
+
+    // Store token and user info
+    await chrome.storage.sync.set({
+      [STORAGE_KEYS.API_TOKEN]: data.access_token
     });
-    
-    return { success: true, suggestion };
+
+    return { success: true, user: data.user };
   } catch (error) {
-    console.error('Failed to get whisper suggestion:', error);
-    throw error;
+    console.error('Login failed:', error);
+    return { error: error.message };
   }
 }
 
-// Send whisper suggestion to content script
-async function sendWhisperToTab(tabId, suggestions) {
+async function logoutUser() {
   try {
-    await chrome.tabs.sendMessage(tabId, {
-      type: 'SHOW_WHISPER',
-      data: { suggestions }
-    });
-  } catch (error) {
-    console.error('Failed to send whisper to tab:', error);
-  }
-}
+    // Clear storage data
+    await chrome.storage.sync.remove([
+      STORAGE_KEYS.API_TOKEN,
+      STORAGE_KEYS.USER_SETTINGS,
+      STORAGE_KEYS.ACTIVE_PROJECT,
+      STORAGE_KEYS.WHISPER_HISTORY
+    ]);
 
-// Track events for analytics
-async function trackEvent(eventData) {
-  try {
-    const sessionData = await getSessionData();
-    
-    const event = {
-      ...eventData,
-      sessionId: sessionData.sessionId,
-      timestamp: Date.now(),
-      extensionVersion: chrome.runtime.getManifest().version
-    };
-    
-    // Send to analytics endpoint (if implemented)
-    // await sendToAPI('/analytics/track', event);
-    
-    console.log('Event tracked:', event);
     return { success: true };
   } catch (error) {
-    console.error('Failed to track event:', error);
-    throw error;
+    console.error('Logout failed:', error);
+    return { error: error.message };
   }
 }
 
-// Get session data
-async function getSessionData() {
+async function checkAuthentication() {
   try {
-    const result = await chrome.storage.sync.get([STORAGE_KEYS.SESSION_DATA]);
-    return result[STORAGE_KEYS.SESSION_DATA] || {
-      sessionId: generateSessionId(),
-      startTime: Date.now(),
-      messageCount: 0,
-      analysisCount: 0
-    };
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.API_TOKEN]);
+    return !!result[STORAGE_KEYS.API_TOKEN];
   } catch (error) {
-    console.error('Failed to get session data:', error);
-    return {
-      sessionId: generateSessionId(),
-      startTime: Date.now(),
-      messageCount: 0,
-      analysisCount: 0
-    };
+    console.error('Auth check failed:', error);
+    return false;
   }
 }
 
-// Update session data
-async function updateSessionData(updates) {
+// Analysis functions
+async function analyzeMessage(messageData) {
   try {
-    const currentData = await getSessionData();
-    const updatedData = {
-      ...currentData,
-      messageCount: currentData.messageCount + (updates.messageCount || 0),
-      analysisCount: currentData.analysisCount + (updates.analysisCount || 0)
-    };
-    
-    await chrome.storage.sync.set({
-      [STORAGE_KEYS.SESSION_DATA]: updatedData
+    // Skip if not enabled
+    const settings = await getSettings();
+    if (!settings.enabled || !settings.autoAnalysis) {
+      return { success: false, message: 'Analysis disabled' };
+    }
+
+    // For simple in-extension analysis, just use TextBlob-like sentiment
+    const sentiment = simpleSentimentAnalysis(messageData.text);
+
+    // Store for history
+    await storeWhisperAnalysis({
+      text: `Based on sentiment analysis: ${getSentimentSuggestion(sentiment)}`,
+      timestamp: new Date().toISOString(),
+      messageData,
+      sentiment
     });
-    
-    return updatedData;
+
+    return {
+      success: true,
+      analysis: {
+        sentiment,
+        suggestions: [
+          {
+            text: getSentimentSuggestion(sentiment),
+            confidence: 0.7,
+            type: 'sentiment'
+          }
+        ]
+      }
+    };
   } catch (error) {
-    console.error('Failed to update session data:', error);
-    throw error;
+    console.error('Message analysis failed:', error);
+    return { error: error.message };
   }
 }
 
-// Send request to Catalyst API
-async function sendToAPI(endpoint, data) {
+// Function to analyze messages using the backend Whisper service
+async function analyzeWhisper(whisperData) {
   try {
-    const response = await fetch(`${CATALYST_API_BASE}${endpoint}`, {
+    // Skip if not enabled
+    const settings = await getSettings();
+    if (!settings.enabled || !settings.realTimeCoaching) {
+      return { success: false, message: 'Whisper coaching disabled' };
+    }
+
+    // Get API token
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.API_TOKEN]);
+    const token = result[STORAGE_KEYS.API_TOKEN];
+
+    if (!token) {
+      return { success: false, message: 'Not authenticated' };
+    }
+
+    // Call whisper-stream API endpoint
+    const response = await fetch(`${CATALYST_API_BASE}/analysis/whisper-stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Extension-Version': chrome.runtime.getManifest().version
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(whisperData)
     });
-    
+
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Whisper analysis failed');
     }
-    
-    return await response.json();
+
+    const data = await response.json();
+
+    // Store in whisper history
+    await storeWhisperAnalysis({
+      text: data.text,
+      timestamp: data.timestamp || new Date().toISOString(),
+      project_id: whisperData.project_id,
+      platform: whisperData.platform,
+      metadata: data.metadata || {}
+    });
+
+    return {
+      success: true,
+      analysis: {
+        suggestions: [
+          {
+            text: data.text,
+            confidence: data.metadata?.confidence || 0.8,
+            type: 'whisper'
+          }
+        ],
+        metadata: data.metadata
+      }
+    };
   } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
+    console.error('Whisper analysis failed:', error);
+    return { error: error.message };
   }
 }
 
-// Utility functions
-function generateSessionId() {
-  return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+// Utility: Simple sentiment analysis for fallback
+function simpleSentimentAnalysis(text) {
+  // Very basic sentiment analysis
+  const positiveWords = ['good', 'great', 'happy', 'love', 'excellent', 'amazing', 'wonderful', 'enjoy', 'thanks', 'thank', 'appreciate'];
+  const negativeWords = ['bad', 'terrible', 'hate', 'sad', 'angry', 'upset', 'disappointed', 'sorry', 'fail', 'terrible', 'awful'];
+
+  text = text.toLowerCase();
+  const words = text.split(/\W+/);
+
+  let positiveCount = 0;
+  let negativeCount = 0;
+
+  words.forEach(word => {
+    if (positiveWords.includes(word)) {
+      positiveCount++;
+    } else if (negativeWords.includes(word)) {
+      negativeCount++;
+    }
+  });
+
+  const polarity = (positiveCount - negativeCount) / (words.length || 1);
+
+  return {
+    polarity,
+    classification: polarity > 0.1 ? 'positive' : polarity < -0.1 ? 'negative' : 'neutral'
+  };
 }
 
-// Handle extension icon click
-chrome.action.onClicked.addListener(async (tab) => {
-  // Open Catalyst dashboard in new tab
-  chrome.tabs.create({
-    url: 'http://localhost:3000'
-  });
-});
+// Utility: Get suggestion based on sentiment
+function getSentimentSuggestion(sentiment) {
+  if (sentiment.classification === 'positive') {
+    return "Great positive tone! Keep the conversation upbeat.";
+  } else if (sentiment.classification === 'negative') {
+    return "Consider using more positive language to improve the tone.";
+  } else {
+    return "Your message is neutral. Consider adding some enthusiasm or personal connection.";
+  }
+}
 
-// Handle tab updates to inject content script if needed
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
+// Whisper history management
+async function storeWhisperAnalysis(whisperData) {
+  try {
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.WHISPER_HISTORY]);
+    const history = result[STORAGE_KEYS.WHISPER_HISTORY] || [];
+
+    // Add to beginning of array (newest first)
+    history.unshift({
+      ...whisperData,
+      id: Date.now().toString()
+    });
+
+    // Limit history size
+    const limitedHistory = history.slice(0, 20);
+
+    await chrome.storage.sync.set({
+      [STORAGE_KEYS.WHISPER_HISTORY]: limitedHistory
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to store whisper analysis:', error);
+    return { error: error.message };
+  }
+}
+
+async function getWhisperHistory() {
+  try {
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.WHISPER_HISTORY]);
+    return result[STORAGE_KEYS.WHISPER_HISTORY] || [];
+  } catch (error) {
+    console.error('Failed to get whisper history:', error);
+    return [];
+  }
+}
+
+// Event tracking
+async function trackEvent(eventData) {
+  try {
     const settings = await getSettings();
-    
     if (!settings.enabled) {
+      return { success: false };
+    }
+
+    // Get session data
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.SESSION_DATA]);
+    const sessionData = result[STORAGE_KEYS.SESSION_DATA] || {
+      sessionId: generateSessionId(),
+      startTime: Date.now(),
+      messageCount: 0,
+      analysisCount: 0
+    };
+
+    // Update session data
+    if (eventData.type === 'message_analyzed') {
+      sessionData.analysisCount++;
+    }
+
+    if (eventData.type.includes('message')) {
+      sessionData.messageCount++;
+    }
+
+    // Save updated session data
+    await chrome.storage.sync.set({
+      [STORAGE_KEYS.SESSION_DATA]: sessionData
+    });
+
+    // In a real implementation, you might send to a backend
+    console.log('Event tracked:', eventData.type, {
+      ...eventData,
+      sessionId: sessionData.sessionId,
+      timestamp: new Date().toISOString()
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to track event:', error);
+    return { error: error.message };
+  }
+}
+
+// Utility: Generate random session ID
+function generateSessionId() {
+  return 'session_' + Math.random().toString(36).substring(2, 15);
+}
+
+// WebSocket connection for real-time whisper coaching
+let whisperSocket = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
+
+async function connectWhisperWebSocket() {
+  try {
+    const settings = await getSettings();
+    if (!settings.enabled || !settings.realTimeCoaching) {
       return;
     }
-    
-    // Check if this is a supported platform
-    const supportedDomains = [
-      'web.whatsapp.com',
-      'www.messenger.com',
-      'discord.com',
-      'slack.com',
-      'teams.microsoft.com',
-      'telegram.org'
-    ];
-    
-    const url = new URL(tab.url);
-    if (supportedDomains.some(domain => url.hostname.includes(domain))) {
-      try {
-        // Inject content script if not already injected
-        await chrome.scripting.executeScript({
-          target: { tabId: tabId },
-          files: ['content_script.js']
-        });
-        
-        console.log('Content script injected into:', url.hostname);
-      } catch (error) {
-        console.error('Failed to inject content script:', error);
-      }
+
+    // Get API token
+    const result = await chrome.storage.sync.get([STORAGE_KEYS.API_TOKEN]);
+    const token = result[STORAGE_KEYS.API_TOKEN];
+
+    if (!token) {
+      console.log('Catalyst: WebSocket connection skipped - not authenticated');
+      return;
     }
+
+    // Generate session ID
+    const sessionId = generateSessionId();
+
+    // Connect to WebSocket
+    const wsUrl = `${CATALYST_API_BASE.replace('http', 'ws')}/analysis/whisper-ws/${sessionId}`;
+    whisperSocket = new WebSocket(wsUrl);
+
+    whisperSocket.onopen = () => {
+      console.log('Catalyst: WebSocket connected');
+      reconnectAttempts = 0;
+
+      // Send authentication message
+      whisperSocket.send(JSON.stringify({
+        type: 'authenticate',
+        token
+      }));
+    };
+
+    whisperSocket.onclose = () => {
+      console.log('Catalyst: WebSocket disconnected');
+      whisperSocket = null;
+
+      // Attempt to reconnect
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        reconnectAttempts++;
+        setTimeout(connectWhisperWebSocket, 5000 * reconnectAttempts);
+      }
+    };
+
+    whisperSocket.onerror = (error) => {
+      console.error('Catalyst: WebSocket error:', error);
+    };
+
+    whisperSocket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        handleWhisperWebSocketMessage(message);
+      } catch (error) {
+        console.error('Catalyst: Failed to parse WebSocket message:', error);
+      }
+    };
+  } catch (error) {
+    console.error('Catalyst: Failed to connect WebSocket:', error);
   }
-});
+}
 
-// Cleanup on extension shutdown
-chrome.runtime.onSuspend.addListener(() => {
-  console.log('Catalyst extension suspending...');
-  // Perform any necessary cleanup
-});
-
-// Handle storage changes
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  console.log('Storage changed:', changes, namespace);
-  
-  // Notify content scripts of setting changes
-  if (changes[STORAGE_KEYS.USER_SETTINGS]) {
-    chrome.tabs.query({}, (tabs) => {
-      tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, {
-          type: 'SETTINGS_UPDATED',
-          data: changes[STORAGE_KEYS.USER_SETTINGS].newValue
-        }).catch(() => {
-          // Ignore errors for tabs without content script
-        });
+function handleWhisperWebSocketMessage(message) {
+  switch (message.type) {
+    case 'whisper_response':
+      // Store whisper
+      storeWhisperAnalysis({
+        text: message.text,
+        timestamp: message.timestamp || new Date().toISOString(),
+        project_id: message.project_id,
+        platform: message.platform,
+        metadata: {}
       });
-    });
-  }
-});
 
-console.log('Catalyst background script loaded');
+      // Send to active tab
+      notifyActiveTabAboutWhisper(message);
+      break;
+
+    case 'error':
+      console.error('Catalyst: WebSocket error:', message.error);
+      break;
+
+    default:
+      console.log('Catalyst: Received WebSocket message:', message);
+  }
+}
+
+async function notifyActiveTabAboutWhisper(whisperData) {
+  try {
+    const tabs = await chrome.tabs.query({ active: true });
+
+    if (tabs.length > 0) {
+      chrome.tabs.sendMessage(tabs[0].id, {
+        type: 'SHOW_WHISPER',
+        data: {
+          suggestions: [
+            {
+              text: whisperData.text,
+              confidence: 0.9,
+              type: 'whisper'
+            }
+          ]
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Catalyst: Failed to notify tab about whisper:', error);
+  }
+}
+
+// Connect WebSocket when extension starts
+connectWhisperWebSocket();

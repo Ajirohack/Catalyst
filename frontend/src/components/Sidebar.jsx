@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Drawer,
   List,
@@ -12,7 +12,7 @@ import {
   Avatar,
   Chip,
   IconButton,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Dashboard as DashboardIcon,
   Add as AddIcon,
@@ -23,42 +23,42 @@ import {
   Favorite as HeartIcon,
   Settings as SettingsIcon,
   Help as HelpIcon,
-} from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+} from "@mui/icons-material";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const DRAWER_WIDTH = 280;
 
 const navigationItems = [
   {
-    text: 'Dashboard',
+    text: "Dashboard",
     icon: <DashboardIcon />,
-    path: '/dashboard',
-    color: '#6366f1',
+    path: "/dashboard",
+    color: "#6366f1",
   },
   {
-    text: 'New Project',
+    text: "New Project",
     icon: <AddIcon />,
-    path: '/new-project',
-    color: '#10b981',
+    path: "/new-project",
+    color: "#10b981",
   },
   {
-    text: 'Continue Project',
+    text: "Continue Project",
     icon: <ContinueIcon />,
-    path: '/continue-project',
-    color: '#f59e0b',
+    path: "/continue-project",
+    color: "#f59e0b",
   },
   {
-    text: 'Timeline',
+    text: "Timeline",
     icon: <TimelineIcon />,
-    path: '/timeline',
-    color: '#8b5cf6',
+    path: "/timeline",
+    color: "#8b5cf6",
   },
   {
-    text: 'Analytics',
+    text: "Analytics",
     icon: <AnalyticsIcon />,
-    path: '/analytics',
-    color: '#06b6d4',
+    path: "/analytics",
+    color: "#06b6d4",
   },
 ];
 
@@ -76,17 +76,17 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
       sx={{
         width: DRAWER_WIDTH,
         flexShrink: 0,
-        '& .MuiDrawer-paper': {
+        "& .MuiDrawer-paper": {
           width: DRAWER_WIDTH,
-          boxSizing: 'border-box',
-          backgroundColor: '#ffffff',
-          borderRight: '1px solid #e2e8f0',
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+          boxSizing: "border-box",
+          backgroundColor: "#ffffff",
+          borderRight: "1px solid #e2e8f0",
+          boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
         },
       }}
     >
       {/* Logo and Brand */}
-      <Box sx={{ p: 3, textAlign: 'center' }}>
+      <Box sx={{ p: 3, textAlign: "center" }}>
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -96,8 +96,8 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
             sx={{
               width: 48,
               height: 48,
-              bgcolor: 'primary.main',
-              margin: '0 auto 16px',
+              bgcolor: "primary.main",
+              margin: "0 auto 16px",
             }}
           >
             <HeartIcon sx={{ fontSize: 28 }} />
@@ -117,7 +117,7 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
       <List sx={{ px: 2, py: 1 }}>
         {navigationItems.map((item, index) => {
           const isActive = location.pathname === item.path;
-          
+
           return (
             <motion.div
               key={item.text}
@@ -131,17 +131,17 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
                   sx={{
                     borderRadius: 2,
                     py: 1.5,
-                    backgroundColor: isActive ? 'primary.main' : 'transparent',
-                    color: isActive ? 'white' : 'text.primary',
-                    '&:hover': {
-                      backgroundColor: isActive ? 'primary.dark' : 'grey.100',
+                    backgroundColor: isActive ? "primary.main" : "transparent",
+                    color: isActive ? "white" : "text.primary",
+                    "&:hover": {
+                      backgroundColor: isActive ? "primary.dark" : "grey.100",
                     },
-                    transition: 'all 0.2s ease-in-out',
+                    transition: "all 0.2s ease-in-out",
                   }}
                 >
                   <ListItemIcon
                     sx={{
-                      color: isActive ? 'white' : item.color,
+                      color: isActive ? "white" : item.color,
                       minWidth: 40,
                     }}
                   >
@@ -151,7 +151,7 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
                     primary={item.text}
                     primaryTypographyProps={{
                       fontWeight: isActive ? 600 : 500,
-                      fontSize: '0.95rem',
+                      fontSize: "0.95rem",
                     }}
                   />
                 </ListItemButton>
@@ -165,23 +165,20 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
 
       {/* Whisper Panel Toggle */}
       <Box sx={{ px: 2, py: 1 }}>
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <ListItemButton
             onClick={onWhisperToggle}
             sx={{
               borderRadius: 2,
               py: 1.5,
-              backgroundColor: 'secondary.light',
-              color: 'white',
-              '&:hover': {
-                backgroundColor: 'secondary.main',
+              backgroundColor: "secondary.light",
+              color: "white",
+              "&:hover": {
+                backgroundColor: "secondary.main",
               },
             }}
           >
-            <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+            <ListItemIcon sx={{ color: "white", minWidth: 40 }}>
               <WhisperIcon />
             </ListItemIcon>
             <ListItemText
@@ -189,11 +186,11 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
               secondary="Real-time coaching"
               primaryTypographyProps={{
                 fontWeight: 600,
-                fontSize: '0.95rem',
+                fontSize: "0.95rem",
               }}
               secondaryTypographyProps={{
-                color: 'rgba(255, 255, 255, 0.8)',
-                fontSize: '0.8rem',
+                color: "rgba(255, 255, 255, 0.8)",
+                fontSize: "0.8rem",
               }}
             />
           </ListItemButton>
@@ -209,23 +206,25 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
           <Box
             sx={{
               p: 2,
-              backgroundColor: 'grey.50',
+              backgroundColor: "grey.50",
               borderRadius: 2,
-              border: '1px solid #e2e8f0',
+              border: "1px solid #e2e8f0",
             }}
           >
             <Typography variant="body2" fontWeight={600} noWrap>
               {selectedProject.name}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {selectedProject.participants?.join(', ')}
+              {selectedProject.participants?.join(", ")}
             </Typography>
             <Box sx={{ mt: 1 }}>
               <Chip
                 label={selectedProject.status}
                 size="small"
-                color={selectedProject.status === 'active' ? 'success' : 'default'}
-                sx={{ fontSize: '0.7rem' }}
+                color={
+                  selectedProject.status === "active" ? "success" : "default"
+                }
+                sx={{ fontSize: "0.7rem" }}
               />
             </Box>
           </Box>
@@ -233,7 +232,7 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
       )}
 
       {/* Bottom Actions */}
-      <Box sx={{ mt: 'auto', p: 2 }}>
+      <Box sx={{ mt: "auto", p: 2 }}>
         <List>
           <ListItem disablePadding>
             <ListItemButton sx={{ borderRadius: 2 }}>
@@ -242,7 +241,7 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
               </ListItemIcon>
               <ListItemText
                 primary="Settings"
-                primaryTypographyProps={{ fontSize: '0.9rem' }}
+                primaryTypographyProps={{ fontSize: "0.9rem" }}
               />
             </ListItemButton>
           </ListItem>
@@ -253,7 +252,7 @@ const Sidebar = ({ onWhisperToggle, selectedProject, onProjectSelect }) => {
               </ListItemIcon>
               <ListItemText
                 primary="Help & Support"
-                primaryTypographyProps={{ fontSize: '0.9rem' }}
+                primaryTypographyProps={{ fontSize: "0.9rem" }}
               />
             </ListItemButton>
           </ListItem>

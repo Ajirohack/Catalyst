@@ -133,96 +133,61 @@ class ConversationData(BaseModel):
 class AnalysisType(str, Enum):
     """Analysis type enumeration"""
     SENTIMENT = "sentiment"
-    COMMUNICATION_PATTERNS = "communication_patterns"
-    RELATIONSHIP_DYNAMICS = "relationship_dynamics"
-    FULL = "full"
+    PATTERN = "pattern"
+    COMMUNICATION = "communication"
+    RELATIONSHIP = "relationship"
+    COMPREHENSIVE = "comprehensive"
 
 class AnalysisRequest(BaseModel):
-    """Analysis request model"""
+    """Request model for text analysis"""
     text: str = Field(..., min_length=1)
-    analysis_type: AnalysisType = AnalysisType.SENTIMENT
-    include_recommendations: bool = False
+    analysis_type: AnalysisType = Field(default=AnalysisType.SENTIMENT)
     project_id: Optional[str] = None
-    context: Optional[Dict[str, Any]] = {}
-
-class SentimentAnalysis(BaseModel):
-    """Sentiment analysis result"""
-    polarity: float = Field(..., ge=-1.0, le=1.0)
-    subjectivity: float = Field(..., ge=0.0, le=1.0)
-    classification: str  # positive, negative, neutral
-    confidence: float = Field(..., ge=0.0, le=1.0)
-
-class CommunicationPattern(BaseModel):
-    """Communication pattern analysis"""
-    message_frequency: Dict[str, int]
-    response_time_avg: float
-    conversation_balance: float
-    engagement_level: str  # high, medium, low
-    dominant_topics: List[str]
-
-class RelationshipDynamics(BaseModel):
-    """Relationship dynamics analysis"""
-    emotional_tone: str
-    conflict_indicators: List[str]
-    positive_indicators: List[str]
-    intimacy_level: str  # high, medium, low
-    communication_health: float = Field(..., ge=0.0, le=10.0)
+    include_recommendations: bool = Field(default=True)
+    context: Optional[Dict[str, Any]] = None
 
 class AnalysisResult(BaseModel):
-    """Complete analysis result"""
-    id: str
-    project_id: Optional[str] = None
-    analysis_type: AnalysisType
-    sentiment: Optional[SentimentAnalysis] = None
-    communication_patterns: Optional[CommunicationPattern] = None
-    relationship_dynamics: Optional[RelationshipDynamics] = None
-    insights: List[str] = []
-    recommendations: List[str] = []
-    created_at: datetime
-    processing_time: float  # in seconds
+    """Result model for text analysis"""
+    analysis_id: str
+    text: str
+    sentiment: Dict[str, Any]
+    patterns: Optional[List[Dict[str, Any]]] = None
+    insights: Optional[List[Dict[str, Any]]] = None
+    recommendations: Optional[List[Dict[str, Any]]] = None
+    metadata: Optional[Dict[str, Any]] = None
+    processed_at: datetime
+
+class MessageUrgency(str, Enum):
+    """Message urgency enumeration"""
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    URGENT = "urgent"
+
+class MessageFrequency(str, Enum):
+    """Message frequency enumeration"""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 class WhisperMessage(BaseModel):
-    """Whisper message model for WebSocket"""
-    type: str  # message, ping, status_request
-    content: Optional[str] = None
-    sender: Optional[str] = None
-    platform: Optional[str] = None
+    """Request model for whisper coaching"""
+    context: str = Field(..., min_length=1)
+    conversation: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
     project_id: Optional[str] = None
-    context: Optional[Dict[str, Any]] = {}
-    timestamp: Optional[datetime] = None
+    platform: Optional[str] = None
+    urgency: MessageUrgency = Field(default=MessageUrgency.NORMAL)
+    frequency: MessageFrequency = Field(default=MessageFrequency.MEDIUM)
+    previous_suggestions: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
 
 class WhisperResponse(BaseModel):
-    """Whisper response model"""
-    type: str  # suggestion, pong, status, error
-    content: str
-    confidence: Optional[float] = None
-    category: Optional[str] = None
+    """Response model for whisper coaching"""
+    text: str
     timestamp: datetime
-
-class AnalysisHistoryResponse(BaseModel):
-    """Analysis history response model"""
-    analyses: List[AnalysisResult]
-    total: int
-    page: int
-    per_page: int
-    total_pages: int
-
-# WebSocket management schemas
-class WebSocketSession(BaseModel):
-    """WebSocket session model"""
-    session_id: str
     project_id: Optional[str] = None
-    connected_at: datetime
-    last_activity: datetime
-    user_agent: Optional[str] = None
+    platform: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
 
-class WebSocketBroadcast(BaseModel):
-    """WebSocket broadcast message model"""
-    message: str
-    target_sessions: Optional[List[str]] = None  # If None, broadcast to all
-    message_type: str = "broadcast"
-
-# Error response schemas
 class ErrorResponse(BaseModel):
     """Error response model"""
     error: str

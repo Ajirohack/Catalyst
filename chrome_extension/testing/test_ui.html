@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catalyst Whisper Coach - Test UI</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .description {
+        margin-top: 10px;
+        opacity: 0.9;
+      }
+
+      .tabs {
+        display: flex;
+        background: #f9f9f9;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .tab {
+        padding: 12px 20px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+      }
+
+      .tab.active {
+        background: white;
+        border-bottom-color: #667eea;
+        color: #667eea;
+      }
+
+      .tab-content {
+        display: none;
+        padding: 20px;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .platform-select {
+        margin-bottom: 20px;
+      }
+
+      .platform-select select {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        width: 300px;
+      }
+
+      .chat-simulator {
+        display: flex;
+        height: 500px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: #f9f9f9;
+        border-right: 1px solid #ddd;
+        padding: 15px;
+      }
+
+      .contact {
+        padding: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 5px;
+      }
+
+      .contact.active {
+        background: #edf2fd;
+      }
+
+      .contact-name {
+        font-weight: 500;
+      }
+
+      .contact-preview {
+        font-size: 12px;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 3px;
+      }
+
+      .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        align-items: center;
+      }
+
+      .chat-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #ddd;
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        font-weight: bold;
+      }
+
+      .chat-header-info h3 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .chat-header-info p {
+        margin: 3px 0 0;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .messages {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+        background: #f5f5f5;
+      }
+
+      .message {
+        margin-bottom: 15px;
+        max-width: 70%;
+        position: relative;
+      }
+
+      .message.sent {
+        margin-left: auto;
+        background: #d1f3ff;
+        border-radius: 18px 4px 18px 18px;
+        padding: 10px 15px;
+      }
+
+      .message.received {
+        margin-right: auto;
+        background: white;
+        border-radius: 4px 18px 18px 18px;
+        padding: 10px 15px;
+      }
+
+      .message-meta {
+        font-size: 11px;
+        color: #666;
+        margin-top: 5px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .message-time {
+        margin-left: 10px;
+      }
+
+      .chat-input {
+        padding: 15px;
+        border-top: 1px solid #ddd;
+        display: flex;
+      }
+
+      .chat-input input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 24px;
+        outline: none;
+        font-size: 14px;
+      }
+
+      .chat-input button {
+        margin-left: 10px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .whisper-overlay {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 300px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        z-index: 100;
+        display: none;
+      }
+
+      .whisper-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .whisper-title {
+        font-weight: 500;
+        color: #667eea;
+      }
+
+      .whisper-close {
+        cursor: pointer;
+        font-size: 18px;
+        color: #aaa;
+      }
+
+      .whisper-content {
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .test-controls {
+        margin-top: 20px;
+        border-top: 1px solid #ddd;
+        padding-top: 20px;
+      }
+
+      .test-controls h3 {
+        margin-top: 0;
+      }
+
+      .test-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .test-button {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #f5f5f5;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .test-button:hover {
+        background: #eee;
+      }
+
+      .scenario-select {
+        margin-bottom: 15px;
+      }
+
+      .scenario-select select {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+        width: 100%;
+      }
+
+      .log-container {
+        margin-top: 20px;
+        padding: 15px;
+        background: #111;
+        color: #eee;
+        border-radius: 6px;
+        font-family: monospace;
+        height: 200px;
+        overflow-y: auto;
+      }
+
+      .log-entry {
+        margin: 5px 0;
+        line-height: 1.4;
+      }
+
+      .log-entry.info {
+        color: #8be9fd;
+      }
+
+      .log-entry.success {
+        color: #50fa7b;
+      }
+
+      .log-entry.error {
+        color: #ff5555;
+      }
+
+      .log-entry.warning {
+        color: #ffb86c;
+      }
+
+      .selector-test {
+        margin-top: 20px;
+      }
+
+      .selector-results {
+        margin-top: 15px;
+        font-family: monospace;
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 6px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+      }
+
+      th {
+        background: #f5f5f5;
+      }
+
+      .test-status {
+        font-weight: bold;
+      }
+
+      .test-status.passed {
+        color: #4caf50;
+      }
+
+      .test-status.failed {
+        color: #f44336;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Catalyst Whisper Coach - Test UI</h1>
+        <p class="description">
+          Test the extension functionality with simulated messaging platforms
+        </p>
+      </header>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="simulator">Chat Simulator</div>
+        <div class="tab" data-tab="selector">DOM Selector Tester</div>
+        <div class="tab" data-tab="log">Test Log</div>
+        <div class="tab" data-tab="results">Test Results</div>
+      </div>
+
+      <div class="tab-content active" id="simulator-tab">
+        <div class="platform-select">
+          <label for="platform-dropdown">Select Platform:</label>
+          <select id="platform-dropdown">
+            <option value="whatsapp">WhatsApp Web</option>
+            <option value="messenger">Facebook Messenger</option>
+            <option value="instagram">Instagram DMs</option>
+            <option value="discord">Discord</option>
+            <option value="slack">Slack</option>
+            <option value="teams">Microsoft Teams</option>
+            <option value="telegram">Telegram Web</option>
+          </select>
+        </div>
+
+        <div class="chat-simulator">
+          <div class="sidebar">
+            <div class="contact active">
+              <div class="contact-name">Sarah Johnson</div>
+              <div class="contact-preview">Hey, how's it going?</div>
+            </div>
+            <div class="contact">
+              <div class="contact-name">Michael Chen</div>
+              <div class="contact-preview">Let's catch up this weekend</div>
+            </div>
+            <div class="contact">
+              <div class="contact-name">Emma Wilson</div>
+              <div class="contact-preview">Did you see that movie?</div>
+            </div>
+          </div>
+
+          <div class="chat-container">
+            <div class="chat-header">
+              <div class="chat-header-avatar">SJ</div>
+              <div class="chat-header-info">
+                <h3>Sarah Johnson</h3>
+                <p>Online</p>
+              </div>
+            </div>
+
+            <div class="messages" id="messages-container">
+              <div class="message received">
+                <div class="message-content">
+                  Hey there! How's your day going?
+                </div>
+                <div class="message-meta">
+                  <span class="message-sender">Sarah</span>
+                  <span class="message-time">10:15 AM</span>
+                </div>
+              </div>
+
+              <div class="message sent">
+                <div class="message-content">
+                  Hi Sarah! It's been pretty busy, but good. How about you?
+                </div>
+                <div class="message-meta">
+                  <span class="message-sender">You</span>
+                  <span class="message-time">10:17 AM</span>
+                </div>
+              </div>
+
+              <div class="message received">
+                <div class="message-content">
+                  I'm doing well! Just working on some projects. Do you want to
+                  get coffee this weekend?
+                </div>
+                <div class="message-meta">
+                  <span class="message-sender">Sarah</span>
+                  <span class="message-time">10:20 AM</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-input">
+              <input
+                type="text"
+                id="message-input"
+                placeholder="Type a message..."
+              />
+              <button id="send-button">→</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="test-controls">
+          <h3>Test Controls</h3>
+
+          <div class="scenario-select">
+            <label for="scenario-dropdown">Load Test Scenario:</label>
+            <select id="scenario-dropdown">
+              <option value="general">General Conversation</option>
+              <option value="conflict">Conflict Resolution</option>
+              <option value="dating">Dating Conversation</option>
+              <option value="emotional">Emotional Support</option>
+              <option value="complex">Complex Relationship Discussion</option>
+            </select>
+          </div>
+
+          <div class="test-buttons">
+            <button class="test-button" id="load-scenario">
+              Load Scenario
+            </button>
+            <button class="test-button" id="clear-chat">Clear Chat</button>
+            <button class="test-button" id="trigger-whisper">
+              Trigger Whisper
+            </button>
+            <button class="test-button" id="test-extension">
+              Test Extension Connection
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="selector-tab">
+        <h3>DOM Selector Testing</h3>
+        <p>
+          This tab helps you test if the content script selectors are working
+          correctly.
+        </p>
+
+        <div class="selector-test">
+          <button class="test-button" id="test-selectors">
+            Test Current Platform Selectors
+          </button>
+
+          <div class="selector-results" id="selector-results">
+            <p>Click "Test Current Platform Selectors" to begin the test.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="log-tab">
+        <h3>Test Log</h3>
+        <button class="test-button" id="clear-log">Clear Log</button>
+
+        <div class="log-container" id="log-container">
+          <div class="log-entry info">
+            Test UI initialized. Ready to begin testing.
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="results-tab">
+        <h3>Test Results</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Test Case</th>
+              <th>Platform</th>
+              <th>Status</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="results-table">
+            <!-- Test results will be populated here -->
+          </tbody>
+        </table>
+
+        <div style="margin-top: 20px">
+          <button class="test-button" id="export-results">
+            Export Results
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="whisper-overlay" id="whisper-overlay">
+      <div class="whisper-header">
+        <div class="whisper-title">Catalyst Whisper</div>
+        <div class="whisper-close" id="close-whisper">×</div>
+      </div>
+      <div class="whisper-content" id="whisper-content">
+        Consider acknowledging her invitation and suggesting a specific time and
+        place to meet.
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Tab switching
+        const tabs = document.querySelectorAll(".tab");
+        tabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            tabs.forEach((t) => t.classList.remove("active"));
+            document
+              .querySelectorAll(".tab-content")
+              .forEach((c) => c.classList.remove("active"));
+
+            tab.classList.add("active");
+            const tabId = tab.getAttribute("data-tab");
+            document.getElementById(`${tabId}-tab`).classList.add("active");
+          });
+        });
+
+        // Chat functionality
+        const messageInput = document.getElementById("message-input");
+        const sendButton = document.getElementById("send-button");
+        const messagesContainer = document.getElementById("messages-container");
+
+        function addMessage(content, isSent = true) {
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `message ${isSent ? "sent" : "received"}`;
+
+          const contentDiv = document.createElement("div");
+          contentDiv.className = "message-content";
+          contentDiv.textContent = content;
+
+          const metaDiv = document.createElement("div");
+          metaDiv.className = "message-meta";
+
+          const senderSpan = document.createElement("span");
+          senderSpan.className = "message-sender";
+          senderSpan.textContent = isSent ? "You" : "Sarah";
+
+          const timeSpan = document.createElement("span");
+          timeSpan.className = "message-time";
+
+          const now = new Date();
+          const hours = now.getHours() % 12 || 12;
+          const minutes = now.getMinutes().toString().padStart(2, "0");
+          const ampm = now.getHours() >= 12 ? "PM" : "AM";
+          timeSpan.textContent = `${hours}:${minutes} ${ampm}`;
+
+          metaDiv.appendChild(senderSpan);
+          metaDiv.appendChild(timeSpan);
+
+          messageDiv.appendChild(contentDiv);
+          messageDiv.appendChild(metaDiv);
+
+          messagesContainer.appendChild(messageDiv);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+          // Log the message
+          logMessage(
+            `Message ${isSent ? "sent" : "received"}: "${content}"`,
+            "info"
+          );
+
+          // Auto-reply if it's a sent message
+          if (isSent && Math.random() > 0.3) {
+            setTimeout(() => {
+              const replies = [
+                "That sounds great!",
+                "Interesting point. What do you think about...",
+                "I'm not sure I agree with that.",
+                "Can you tell me more?",
+                "I've been thinking about that too!",
+                "I'm feeling a bit confused by what you mean.",
+                "I appreciate you sharing that with me.",
+                "Let's talk more about this in person.",
+              ];
+              const reply = replies[Math.floor(Math.random() * replies.length)];
+              addMessage(reply, false);
+
+              // Random chance to trigger whisper
+              if (Math.random() > 0.5) {
+                setTimeout(showWhisper, 1000);
+              }
+            }, 1000 + Math.random() * 2000);
+          }
+        }
+
+        sendButton.addEventListener("click", () => {
+          const message = messageInput.value.trim();
+          if (message) {
+            addMessage(message);
+            messageInput.value = "";
+
+            // Random chance to trigger whisper
+            if (Math.random() > 0.7) {
+              setTimeout(showWhisper, 1000);
+            }
+          }
+        });
+
+        messageInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            sendButton.click();
+          }
+        });
+
+        // Whisper functionality
+        const whisperOverlay = document.getElementById("whisper-overlay");
+        const whisperContent = document.getElementById("whisper-content");
+        const closeWhisper = document.getElementById("close-whisper");
+
+        function showWhisper(customContent = null) {
+          const whispers = [
+            "Consider asking an open-ended question to keep the conversation flowing.",
+            "She seems interested in making plans. Suggest a specific time and place.",
+            "This might be a good time to share something personal to deepen the connection.",
+            "Acknowledge her feelings before responding with your perspective.",
+            "She might need some emotional support right now. Show empathy in your response.",
+            "Try focusing on finding common ground on this topic.",
+            "Consider using 'I' statements to express your feelings without sounding accusatory.",
+          ];
+
+          whisperContent.textContent =
+            customContent ||
+            whispers[Math.floor(Math.random() * whispers.length)];
+          whisperOverlay.style.display = "block";
+
+          logMessage(
+            `Whisper displayed: "${whisperContent.textContent}"`,
+            "success"
+          );
+        }
+
+        closeWhisper.addEventListener("click", () => {
+          whisperOverlay.style.display = "none";
+          logMessage("Whisper closed", "info");
+        });
+
+        // Test controls
+        const loadScenarioButton = document.getElementById("load-scenario");
+        const clearChatButton = document.getElementById("clear-chat");
+        const triggerWhisperButton = document.getElementById("trigger-whisper");
+        const testExtensionButton = document.getElementById("test-extension");
+        const scenarioDropdown = document.getElementById("scenario-dropdown");
+
+        loadScenarioButton.addEventListener("click", () => {
+          const scenario = scenarioDropdown.value;
+          loadScenario(scenario);
+        });
+
+        clearChatButton.addEventListener("click", () => {
+          messagesContainer.innerHTML = "";
+          logMessage("Chat cleared", "info");
+        });
+
+        triggerWhisperButton.addEventListener("click", () => {
+          showWhisper();
+        });
+
+        testExtensionButton.addEventListener("click", () => {
+          logMessage("Testing extension connection...", "info");
+
+          if (
+            typeof chrome !== "undefined" &&
+            chrome.runtime &&
+            chrome.runtime.sendMessage
+          ) {
+            chrome.runtime.sendMessage(
+              { type: "TEST_CONNECTION" },
+              (response) => {
+                if (chrome.runtime.lastError) {
+                  logMessage(
+                    `Extension connection failed: ${chrome.runtime.lastError.message}`,
+                    "error"
+                  );
+                  addTestResult(
+                    "Extension Connection",
+                    getPlatformName(),
+                    "Failed",
+                    chrome.runtime.lastError.message
+                  );
+                } else if (response && response.success) {
+                  logMessage("Extension connection successful!", "success");
+                  addTestResult(
+                    "Extension Connection",
+                    getPlatformName(),
+                    "Passed",
+                    "Connection established successfully"
+                  );
+                } else {
+                  logMessage(
+                    "Extension connection failed: No valid response",
+                    "error"
+                  );
+                  addTestResult(
+                    "Extension Connection",
+                    getPlatformName(),
+                    "Failed",
+                    "No valid response from extension"
+                  );
+                }
+              }
+            );
+          } else {
+            logMessage(
+              "Chrome extension API not available. This page needs to be loaded as a Chrome extension.",
+              "error"
+            );
+            addTestResult(
+              "Extension Connection",
+              getPlatformName(),
+              "Failed",
+              "Chrome extension API not available"
+            );
+          }
+        });
+
+        // Selector testing
+        const testSelectorsButton = document.getElementById("test-selectors");
+        const selectorResults = document.getElementById("selector-results");
+
+        testSelectorsButton.addEventListener("click", () => {
+          const platform = document.getElementById("platform-dropdown").value;
+
+          // Mock selector test results
+          const selectors = {
+            whatsapp: {
+              messageContainer: true,
+              messages: true,
+              messageText: true,
+              sender: true,
+              timestamp: true,
+              inputField: true,
+              sendButton: true,
+            },
+            messenger: {
+              messageContainer: true,
+              messages: true,
+              messageText: true,
+              sender: false,
+              timestamp: true,
+              inputField: true,
+              sendButton: true,
+            },
+            instagram: {
+              messageContainer: false,
+              messages: false,
+              messageText: true,
+              sender: true,
+              timestamp: true,
+              inputField: true,
+              sendButton: true,
+            },
+          };
+
+          const mockResults = selectors[platform] || {
+            messageContainer: Math.random() > 0.3,
+            messages: Math.random() > 0.3,
+            messageText: Math.random() > 0.3,
+            sender: Math.random() > 0.3,
+            timestamp: Math.random() > 0.3,
+            inputField: Math.random() > 0.3,
+            sendButton: Math.random() > 0.3,
+          };
+
+          // Generate HTML for results
+          let resultsHTML = `<h4>Selector Test Results for ${getPlatformName()}</h4>`;
+          resultsHTML +=
+            "<table><thead><tr><th>Selector</th><th>Status</th></tr></thead><tbody>";
+
+          for (const [key, value] of Object.entries(mockResults)) {
+            resultsHTML += `<tr>
+                        <td>${key}</td>
+                        <td class="test-status ${
+                          value ? "passed" : "failed"
+                        }">${value ? "✓ FOUND" : "✗ NOT FOUND"}</td>
+                    </tr>`;
+          }
+
+          resultsHTML += "</tbody></table>";
+
+          selectorResults.innerHTML = resultsHTML;
+
+          // Log the test
+          logMessage(
+            `Selector test completed for ${getPlatformName()}`,
+            "info"
+          );
+
+          // Calculate pass rate
+          const totalSelectors = Object.keys(mockResults).length;
+          const passedSelectors = Object.values(mockResults).filter(
+            (v) => v
+          ).length;
+          const passRate = Math.round((passedSelectors / totalSelectors) * 100);
+
+          // Add to test results
+          addTestResult(
+            "DOM Selectors",
+            getPlatformName(),
+            passRate === 100 ? "Passed" : "Partial",
+            `${passedSelectors}/${totalSelectors} selectors working (${passRate}%)`
+          );
+        });
+
+        // Logging
+        const logContainer = document.getElementById("log-container");
+        const clearLogButton = document.getElementById("clear-log");
+
+        function logMessage(message, type = "info") {
+          const logEntry = document.createElement("div");
+          logEntry.className = `log-entry ${type}`;
+
+          const timestamp = new Date().toLocaleTimeString();
+          logEntry.textContent = `[${timestamp}] ${message}`;
+
+          logContainer.appendChild(logEntry);
+          logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        clearLogButton.addEventListener("click", () => {
+          logContainer.innerHTML = "";
+          logMessage("Log cleared", "info");
+        });
+
+        // Test results
+        const resultsTable = document.getElementById("results-table");
+        const exportResultsButton = document.getElementById("export-results");
+
+        function addTestResult(testCase, platform, status, notes = "") {
+          const row = document.createElement("tr");
+
+          const testCaseCell = document.createElement("td");
+          testCaseCell.textContent = testCase;
+
+          const platformCell = document.createElement("td");
+          platformCell.textContent = platform;
+
+          const statusCell = document.createElement("td");
+          statusCell.className = `test-status ${
+            status.toLowerCase() === "passed" ? "passed" : "failed"
+          }`;
+          statusCell.textContent = status;
+
+          const notesCell = document.createElement("td");
+          notesCell.textContent = notes;
+
+          row.appendChild(testCaseCell);
+          row.appendChild(platformCell);
+          row.appendChild(statusCell);
+          row.appendChild(notesCell);
+
+          resultsTable.appendChild(row);
+        }
+
+        exportResultsButton.addEventListener("click", () => {
+          const results = [];
+
+          document.querySelectorAll("#results-table tr").forEach((row) => {
+            const cells = row.querySelectorAll("td");
+            if (cells.length === 4) {
+              results.push({
+                testCase: cells[0].textContent,
+                platform: cells[1].textContent,
+                status: cells[2].textContent,
+                notes: cells[3].textContent,
+              });
+            }
+          });
+
+          const json = JSON.stringify(results, null, 2);
+          const blob = new Blob([json], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `catalyst-test-results-${
+            new Date().toISOString().split("T")[0]
+          }.json`;
+          a.click();
+
+          URL.revokeObjectURL(url);
+
+          logMessage("Test results exported", "success");
+        });
+
+        // Test scenarios
+        function loadScenario(scenario) {
+          messagesContainer.innerHTML = "";
+
+          const scenarios = {
+            general: [
+              { content: "Hey there! How's your day going?", sent: false },
+              {
+                content:
+                  "It's going pretty well, thanks for asking! Just busy with work. How about you?",
+                sent: true,
+              },
+              {
+                content: "Same here, lots to do. Are you free this weekend?",
+                sent: false,
+              },
+              { content: "I think so, what did you have in mind?", sent: true },
+              {
+                content:
+                  "I was thinking we could try that new restaurant downtown.",
+                sent: false,
+              },
+            ],
+            conflict: [
+              {
+                content:
+                  "Hey, I was a bit upset about what happened yesterday.",
+                sent: false,
+              },
+              {
+                content:
+                  "What do you mean? I don't think I did anything wrong.",
+                sent: true,
+              },
+              {
+                content: "You were 30 minutes late and didn't even apologize.",
+                sent: false,
+              },
+              {
+                content: "Traffic was terrible! I couldn't help it.",
+                sent: true,
+              },
+              {
+                content: "You could have texted me to let me know though.",
+                sent: false,
+              },
+            ],
+            dating: [
+              {
+                content: "I had a really great time on our date last night :)",
+                sent: false,
+              },
+              {
+                content: "Me too! The restaurant you picked was perfect.",
+                sent: true,
+              },
+              {
+                content:
+                  "I'm glad you liked it. Would you want to do something again this weekend?",
+                sent: false,
+              },
+              {
+                content: "I'd like that. What did you have in mind?",
+                sent: true,
+              },
+              {
+                content: "Maybe we could go hiking if the weather is nice?",
+                sent: false,
+              },
+            ],
+            emotional: [
+              {
+                content: "I'm having a really tough day today :(",
+                sent: false,
+              },
+              {
+                content: "I'm sorry to hear that. What's going on?",
+                sent: true,
+              },
+              {
+                content:
+                  "Work is just overwhelming and I got some bad news about my aunt's health.",
+                sent: false,
+              },
+              {
+                content:
+                  "That's a lot to deal with. Is there anything I can do to help?",
+                sent: true,
+              },
+              {
+                content: "Just talking about it helps. Thanks for listening.",
+                sent: false,
+              },
+            ],
+            complex: [
+              {
+                content: "We need to talk about our relationship.",
+                sent: false,
+              },
+              {
+                content: "That sounds serious. What's on your mind?",
+                sent: true,
+              },
+              {
+                content:
+                  "I feel like we've been growing apart. We hardly spend quality time together anymore.",
+                sent: false,
+              },
+              {
+                content:
+                  "I've been really busy with work, but you're right. I miss how things used to be.",
+                sent: true,
+              },
+              {
+                content:
+                  "Do you think we should try to prioritize our relationship more?",
+                sent: false,
+              },
+            ],
+          };
+
+          const selectedScenario = scenarios[scenario] || scenarios.general;
+
+          selectedScenario.forEach((message) => {
+            addMessage(message.content, message.sent);
+          });
+
+          logMessage(`Loaded "${scenario}" scenario`, "info");
+
+          // Trigger whisper after loading scenario
+          setTimeout(showWhisper, 1000);
+        }
+
+        // Helper functions
+        function getPlatformName() {
+          const platform = document.getElementById("platform-dropdown").value;
+          const select = document.getElementById("platform-dropdown");
+          return select.options[select.selectedIndex].text;
+        }
+
+        // Initialize with default scenario
+        setTimeout(() => {
+          loadScenario("general");
+        }, 500);
+      });
+    </script>
+  </body>
+</html>

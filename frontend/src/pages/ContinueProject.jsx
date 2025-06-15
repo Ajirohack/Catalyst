@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
@@ -21,18 +21,16 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
-  Tooltip,
   Menu,
   ListItemIcon,
   ListItemText,
   Divider,
   Paper,
   Avatar,
-  LinearProgress
-} from '@mui/material';
+  LinearProgress,
+} from "@mui/material";
 import {
   Search as SearchIcon,
-  FilterList as FilterIcon,
   Add as AddIcon,
   MoreVert as MoreVertIcon,
   PlayArrow as PlayIcon,
@@ -45,15 +43,20 @@ import {
   Business as BusinessIcon,
   School as SchoolIcon,
   Group as GroupIcon,
-  TrendingUp as TrendingUpIcon,
   Schedule as ScheduleIcon,
   CheckCircle as CheckCircleIcon,
-  RadioButtonUnchecked as RadioButtonUncheckedIcon
-} from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import ProjectCard from '../components/ProjectCard';
+  RadioButtonUnchecked as RadioButtonUncheckedIcon,
+  // Removed unused imports:
+  // FilterList as FilterIcon,
+  // TrendingUp as TrendingUpIcon,
+} from "@mui/icons-material";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+// Removed unused import:
+// import { Tooltip } from "@mui/material";
+// import ProjectCard from "../components/ProjectCard";
 
 const ROLE_ICONS = {
   romantic_partner: <FavoriteIcon />,
@@ -62,14 +65,14 @@ const ROLE_ICONS = {
   family_member: <FavoriteIcon />,
   colleague: <BusinessIcon />,
   mentor_mentee: <SchoolIcon />,
-  other: <GroupIcon />
+  other: <GroupIcon />,
 };
 
 const STATUS_COLORS = {
-  active: 'success',
-  paused: 'warning',
-  completed: 'info',
-  archived: 'default'
+  active: "success",
+  paused: "warning",
+  completed: "info",
+  archived: "default",
 };
 
 const ContinueProject = () => {
@@ -78,10 +81,10 @@ const ContinueProject = () => {
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('updated_at');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("updated_at");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -91,104 +94,109 @@ const ContinueProject = () => {
     total: 0,
     active: 0,
     completed: 0,
-    archived: 0
+    archived: 0,
   });
 
   const itemsPerPage = 9;
 
-  useEffect(() => {
-    fetchProjects();
-    fetchStats();
-  }, [page, sortBy]);
-
-  useEffect(() => {
-    filterProjects();
-  }, [projects, searchTerm, statusFilter, roleFilter]);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8000/api/projects/', {
+      const response = await axios.get("http://localhost:8000/api/projects/", {
         params: {
           page,
           limit: itemsPerPage,
           sort_by: sortBy,
-          order: 'desc'
-        }
+          order: "desc",
+        },
       });
       setProjects(response.data.projects || []);
       setTotalPages(Math.ceil((response.data.total || 0) / itemsPerPage));
     } catch (err) {
-      setError('Failed to load projects. Please try again.');
-      console.error('Error fetching projects:', err);
+      setError("Failed to load projects. Please try again.");
+      console.error("Error fetching projects:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, sortBy, itemsPerPage]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/projects/stats');
+      const response = await axios.get(
+        "http://localhost:8000/api/projects/stats"
+      );
       setStats(response.data);
     } catch (err) {
-      console.error('Error fetching stats:', err);
+      console.error("Error fetching stats:", err);
     }
-  };
+  }, []);
 
-  const filterProjects = () => {
+  const filterProjects = useCallback(() => {
     let filtered = [...projects];
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(project =>
-        project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.partner_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (project) =>
+          project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          project.partner_name
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          project.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(project => project.status === statusFilter);
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((project) => project.status === statusFilter);
     }
 
     // Role filter
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter(project => project.role === roleFilter);
+    if (roleFilter !== "all") {
+      filtered = filtered.filter((project) => project.role === roleFilter);
     }
 
     setFilteredProjects(filtered);
-  };
+  }, [projects, searchTerm, statusFilter, roleFilter]);
+
+  useEffect(() => {
+    fetchProjects();
+    fetchStats();
+  }, [fetchProjects, fetchStats, page, sortBy]);
+
+  useEffect(() => {
+    filterProjects();
+  }, [filterProjects, projects, searchTerm, statusFilter, roleFilter]);
 
   const handleProjectAction = async (projectId, action) => {
     try {
-      let endpoint = '';
+      let endpoint = "";
       let data = {};
 
       switch (action) {
-        case 'continue':
+        case "continue":
           // Navigate to project dashboard or analysis page
           navigate(`/project/${projectId}`);
           return;
-        case 'pause':
+        case "pause":
           endpoint = `/api/projects/${projectId}/status`;
-          data = { status: 'paused' };
+          data = { status: "paused" };
           break;
-        case 'resume':
+        case "resume":
           endpoint = `/api/projects/${projectId}/status`;
-          data = { status: 'active' };
+          data = { status: "active" };
           break;
-        case 'complete':
+        case "complete":
           endpoint = `/api/projects/${projectId}/status`;
-          data = { status: 'completed' };
+          data = { status: "completed" };
           break;
-        case 'archive':
+        case "archive":
           endpoint = `/api/projects/${projectId}/status`;
-          data = { status: 'archived' };
+          data = { status: "archived" };
           break;
-        case 'unarchive':
+        case "unarchive":
           endpoint = `/api/projects/${projectId}/status`;
-          data = { status: 'active' };
+          data = { status: "active" };
           break;
         default:
           return;
@@ -207,13 +215,15 @@ const ContinueProject = () => {
     if (!selectedProject) return;
 
     try {
-      await axios.delete(`http://localhost:8000/api/projects/${selectedProject.id}`);
+      await axios.delete(
+        `http://localhost:8000/api/projects/${selectedProject.id}`
+      );
       fetchProjects();
       fetchStats();
       setDeleteDialogOpen(false);
       setSelectedProject(null);
     } catch (err) {
-      setError('Failed to delete project. Please try again.');
+      setError("Failed to delete project. Please try again.");
     }
   };
 
@@ -229,15 +239,17 @@ const ContinueProject = () => {
 
   const getProjectProgress = (project) => {
     if (!project.goals || project.goals.length === 0) return 0;
-    const completedGoals = project.goals.filter(goal => goal.completed).length;
+    const completedGoals = project.goals.filter(
+      (goal) => goal.completed
+    ).length;
     return Math.round((completedGoals / project.goals.length) * 100);
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -246,8 +258,8 @@ const ContinueProject = () => {
     const date = new Date(dateString);
     const diffTime = Math.abs(now - date);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return '1 day ago';
+
+    if (diffDays === 1) return "1 day ago";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
     return `${Math.ceil(diffDays / 30)} months ago`;
@@ -255,7 +267,14 @@ const ContinueProject = () => {
 
   if (loading && projects.length === 0) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+        }}
+      >
         <CircularProgress size={60} />
       </Box>
     );
@@ -270,12 +289,17 @@ const ContinueProject = () => {
       <Box sx={{ p: 3 }}>
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
             <PsychologyIcon color="primary" />
             Your Projects
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Continue working on your relationship projects and track your progress
+            Continue working on your relationship projects and track your
+            progress
           </Typography>
         </Box>
 
@@ -284,7 +308,13 @@ const ContinueProject = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
                     <Typography variant="h4" color="primary">
                       {stats.total}
@@ -293,7 +323,9 @@ const ContinueProject = () => {
                       Total Projects
                     </Typography>
                   </Box>
-                  <PsychologyIcon sx={{ fontSize: 40, color: 'primary.main', opacity: 0.3 }} />
+                  <PsychologyIcon
+                    sx={{ fontSize: 40, color: "primary.main", opacity: 0.3 }}
+                  />
                 </Box>
               </CardContent>
             </Card>
@@ -301,7 +333,13 @@ const ContinueProject = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
                     <Typography variant="h4" color="success.main">
                       {stats.active}
@@ -310,7 +348,9 @@ const ContinueProject = () => {
                       Active
                     </Typography>
                   </Box>
-                  <PlayIcon sx={{ fontSize: 40, color: 'success.main', opacity: 0.3 }} />
+                  <PlayIcon
+                    sx={{ fontSize: 40, color: "success.main", opacity: 0.3 }}
+                  />
                 </Box>
               </CardContent>
             </Card>
@@ -318,7 +358,13 @@ const ContinueProject = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
                     <Typography variant="h4" color="info.main">
                       {stats.completed}
@@ -327,7 +373,9 @@ const ContinueProject = () => {
                       Completed
                     </Typography>
                   </Box>
-                  <CheckCircleIcon sx={{ fontSize: 40, color: 'info.main', opacity: 0.3 }} />
+                  <CheckCircleIcon
+                    sx={{ fontSize: 40, color: "info.main", opacity: 0.3 }}
+                  />
                 </Box>
               </CardContent>
             </Card>
@@ -335,7 +383,13 @@ const ContinueProject = () => {
           <Grid item xs={12} sm={6} md={3}>
             <Card>
               <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
                   <Box>
                     <Typography variant="h4" color="text.secondary">
                       {stats.archived}
@@ -344,7 +398,9 @@ const ContinueProject = () => {
                       Archived
                     </Typography>
                   </Box>
-                  <ArchiveIcon sx={{ fontSize: 40, color: 'text.secondary', opacity: 0.3 }} />
+                  <ArchiveIcon
+                    sx={{ fontSize: 40, color: "text.secondary", opacity: 0.3 }}
+                  />
                 </Box>
               </CardContent>
             </Card>
@@ -365,7 +421,7 @@ const ContinueProject = () => {
                     <InputAdornment position="start">
                       <SearchIcon />
                     </InputAdornment>
-                  )
+                  ),
                 }}
               />
             </Grid>
@@ -424,7 +480,7 @@ const ContinueProject = () => {
                 fullWidth
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => navigate('/new')}
+                onClick={() => navigate("/new")}
                 sx={{ height: 56 }}
               >
                 New Project
@@ -441,22 +497,25 @@ const ContinueProject = () => {
 
         {/* Projects Grid */}
         {filteredProjects.length === 0 ? (
-          <Paper sx={{ p: 6, textAlign: 'center' }}>
-            <PsychologyIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+          <Paper sx={{ p: 6, textAlign: "center" }}>
+            <PsychologyIcon
+              sx={{ fontSize: 80, color: "text.secondary", mb: 2 }}
+            />
             <Typography variant="h5" gutterBottom>
-              {projects.length === 0 ? 'No projects yet' : 'No projects match your filters'}
+              {projects.length === 0
+                ? "No projects yet"
+                : "No projects match your filters"}
             </Typography>
             <Typography variant="body1" color="text.secondary" gutterBottom>
               {projects.length === 0
-                ? 'Create your first relationship project to get started with AI-powered coaching'
-                : 'Try adjusting your search or filter criteria'
-              }
+                ? "Create your first relationship project to get started with AI-powered coaching"
+                : "Try adjusting your search or filter criteria"}
             </Typography>
             {projects.length === 0 && (
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => navigate('/new')}
+                onClick={() => navigate("/new")}
                 sx={{ mt: 2 }}
               >
                 Create Your First Project
@@ -477,40 +536,74 @@ const ContinueProject = () => {
                     >
                       <Card
                         sx={{
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          cursor: 'pointer',
-                          transition: 'all 0.3s ease',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: 4
-                          }
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                          cursor: "pointer",
+                          transition: "all 0.3s ease",
+                          "&:hover": {
+                            transform: "translateY(-4px)",
+                            boxShadow: 4,
+                          },
                         }}
-                        onClick={() => handleProjectAction(project.id, 'continue')}
+                        onClick={() =>
+                          handleProjectAction(project.id, "continue")
+                        }
                       >
                         <CardContent sx={{ flexGrow: 1 }}>
                           {/* Header */}
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "flex-start",
+                              mb: 2,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <Avatar
+                                sx={{
+                                  bgcolor: "primary.main",
+                                  width: 32,
+                                  height: 32,
+                                }}
+                              >
                                 {ROLE_ICONS[project.role] || <GroupIcon />}
                               </Avatar>
                               <Box>
-                                <Typography variant="h6" noWrap sx={{ maxWidth: 150 }}>
+                                <Typography
+                                  variant="h6"
+                                  noWrap
+                                  sx={{ maxWidth: 150 }}
+                                >
                                   {project.name}
                                 </Typography>
-                                <Typography variant="caption" color="text.secondary">
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                >
                                   {project.platform}
                                 </Typography>
                               </Box>
                             </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
                               <Chip
                                 label={project.status}
                                 color={STATUS_COLORS[project.status]}
                                 size="small"
-                                sx={{ textTransform: 'capitalize' }}
+                                sx={{ textTransform: "capitalize" }}
                               />
                               <IconButton
                                 size="small"
@@ -525,8 +618,13 @@ const ContinueProject = () => {
                           </Box>
 
                           {/* Partner */}
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
-                            <strong>Partner:</strong> {project.partner_name || 'Not specified'}
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            gutterBottom
+                          >
+                            <strong>Partner:</strong>{" "}
+                            {project.partner_name || "Not specified"}
                           </Typography>
 
                           {/* Description */}
@@ -536,10 +634,10 @@ const ContinueProject = () => {
                               color="text.secondary"
                               sx={{
                                 mb: 2,
-                                display: '-webkit-box',
+                                display: "-webkit-box",
                                 WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden'
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
                               }}
                             >
                               {project.description}
@@ -549,12 +647,29 @@ const ContinueProject = () => {
                           {/* Goals Progress */}
                           {project.goals && project.goals.length > 0 && (
                             <Box sx={{ mb: 2 }}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                                <Typography variant="body2" color="text.secondary">
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  mb: 1,
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
                                   Goals Progress
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  {project.goals.filter(g => g.completed).length}/{project.goals.length}
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {
+                                    project.goals.filter((g) => g.completed)
+                                      .length
+                                  }
+                                  /{project.goals.length}
                                 </Typography>
                               </Box>
                               <LinearProgress
@@ -566,14 +681,35 @@ const ContinueProject = () => {
                           )}
 
                           {/* Dates */}
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <ScheduleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                              <Typography variant="caption" color="text.secondary">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              mt: "auto",
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                              }}
+                            >
+                              <ScheduleIcon
+                                sx={{ fontSize: 16, color: "text.secondary" }}
+                              />
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
                                 {getTimeSince(project.updated_at)}
                               </Typography>
                             </Box>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               Created {formatDate(project.created_at)}
                             </Typography>
                           </Box>
@@ -587,7 +723,7 @@ const ContinueProject = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
                 <Pagination
                   count={totalPages}
                   page={page}
@@ -605,40 +741,52 @@ const ContinueProject = () => {
           anchorEl={menuAnchor}
           open={Boolean(menuAnchor)}
           onClose={handleMenuClose}
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          transformOrigin={{ horizontal: "right", vertical: "top" }}
+          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
         >
-          <MenuItem onClick={() => handleProjectAction(selectedProject?.id, 'continue')}>
+          <MenuItem
+            onClick={() => handleProjectAction(selectedProject?.id, "continue")}
+          >
             <ListItemIcon>
               <PlayIcon />
             </ListItemIcon>
             <ListItemText>Continue Project</ListItemText>
           </MenuItem>
-          <MenuItem onClick={() => navigate(`/project/${selectedProject?.id}/edit`)}>
+          <MenuItem
+            onClick={() => navigate(`/project/${selectedProject?.id}/edit`)}
+          >
             <ListItemIcon>
               <EditIcon />
             </ListItemIcon>
             <ListItemText>Edit Project</ListItemText>
           </MenuItem>
           <Divider />
-          {selectedProject?.status === 'active' && (
-            <MenuItem onClick={() => handleProjectAction(selectedProject?.id, 'pause')}>
+          {selectedProject?.status === "active" && (
+            <MenuItem
+              onClick={() => handleProjectAction(selectedProject?.id, "pause")}
+            >
               <ListItemIcon>
                 <RadioButtonUncheckedIcon />
               </ListItemIcon>
               <ListItemText>Pause Project</ListItemText>
             </MenuItem>
           )}
-          {selectedProject?.status === 'paused' && (
-            <MenuItem onClick={() => handleProjectAction(selectedProject?.id, 'resume')}>
+          {selectedProject?.status === "paused" && (
+            <MenuItem
+              onClick={() => handleProjectAction(selectedProject?.id, "resume")}
+            >
               <ListItemIcon>
                 <PlayIcon />
               </ListItemIcon>
               <ListItemText>Resume Project</ListItemText>
             </MenuItem>
           )}
-          {selectedProject?.status !== 'completed' && (
-            <MenuItem onClick={() => handleProjectAction(selectedProject?.id, 'complete')}>
+          {selectedProject?.status !== "completed" && (
+            <MenuItem
+              onClick={() =>
+                handleProjectAction(selectedProject?.id, "complete")
+              }
+            >
               <ListItemIcon>
                 <CheckCircleIcon />
               </ListItemIcon>
@@ -646,15 +794,23 @@ const ContinueProject = () => {
             </MenuItem>
           )}
           <Divider />
-          {selectedProject?.status !== 'archived' ? (
-            <MenuItem onClick={() => handleProjectAction(selectedProject?.id, 'archive')}>
+          {selectedProject?.status !== "archived" ? (
+            <MenuItem
+              onClick={() =>
+                handleProjectAction(selectedProject?.id, "archive")
+              }
+            >
               <ListItemIcon>
                 <ArchiveIcon />
               </ListItemIcon>
               <ListItemText>Archive Project</ListItemText>
             </MenuItem>
           ) : (
-            <MenuItem onClick={() => handleProjectAction(selectedProject?.id, 'unarchive')}>
+            <MenuItem
+              onClick={() =>
+                handleProjectAction(selectedProject?.id, "unarchive")
+              }
+            >
               <ListItemIcon>
                 <UnarchiveIcon />
               </ListItemIcon>
@@ -667,26 +823,34 @@ const ContinueProject = () => {
               setDeleteDialogOpen(true);
               handleMenuClose();
             }}
-            sx={{ color: 'error.main' }}
+            sx={{ color: "error.main" }}
           >
             <ListItemIcon>
-              <DeleteIcon sx={{ color: 'error.main' }} />
+              <DeleteIcon sx={{ color: "error.main" }} />
             </ListItemIcon>
             <ListItemText>Delete Project</ListItemText>
           </MenuItem>
         </Menu>
 
         {/* Delete Confirmation Dialog */}
-        <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+        >
           <DialogTitle>Delete Project</DialogTitle>
           <DialogContent>
             <Typography>
-              Are you sure you want to delete "{selectedProject?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{selectedProject?.name}"? This
+              action cannot be undone.
             </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleDeleteProject} color="error" variant="contained">
+            <Button
+              onClick={handleDeleteProject}
+              color="error"
+              variant="contained"
+            >
               Delete
             </Button>
           </DialogActions>

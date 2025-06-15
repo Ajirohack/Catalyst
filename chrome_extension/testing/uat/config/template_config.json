@@ -1,0 +1,53 @@
+{
+  "branding": {
+    "logo_path": "/chrome_extension/icons/logo.png",
+    "primary_color": "#3e4784",
+    "secondary_color": "#f8f9fa",
+    "font_family": "Arial, sans-serif"
+  },
+  "templates": {
+    "consent_form": {
+      "required_fields": ["participant_name", "participant_signature", "date"],
+      "optional_fields": ["participant_email", "participant_phone"],
+      "include_privacy_section": true,
+      "include_recording_consent": true
+    },
+    "pre_test_questionnaire": {
+      "demographic_section": true,
+      "technical_proficiency_section": true,
+      "communication_habits_section": true,
+      "expectations_section": true,
+      "rating_scale": "1-5"
+    },
+    "task_completion_form": {
+      "track_time": true,
+      "track_errors": true,
+      "satisfaction_rating": true,
+      "open_comments": true,
+      "facilitator_observations": true,
+      "rating_scale": "1-5"
+    },
+    "daily_journal": {
+      "platforms_used_section": true,
+      "suggestion_metrics_section": true,
+      "issue_reporting_section": true,
+      "time_tracking": true,
+      "rating_scale": "1-5"
+    },
+    "post_test_survey": {
+      "include_sus": true,
+      "include_nps": true,
+      "feature_satisfaction_section": true,
+      "open_feedback_section": true,
+      "future_recommendations_section": true,
+      "rating_scale": "1-5"
+    }
+  },
+  "default_text": {
+    "consent_introduction": "Thank you for participating in the User Acceptance Testing of the Catalyst Whisper Coach Chrome extension. This document outlines the testing process and how your data will be used. Please read it carefully before providing your consent.",
+    "pre_test_introduction": "Before we begin testing, we would like to learn a bit about you and your communication habits. This information will help us understand how different users interact with our extension.",
+    "task_completion_introduction": "This form will guide you through specific tasks to test the Catalyst Whisper Coach extension. Please follow the instructions carefully and provide feedback on your experience.",
+    "daily_journal_introduction": "Please complete this journal entry for each day you use the extension during the testing period. Your ongoing feedback is valuable for understanding how the extension performs in real-world use.",
+    "post_test_introduction": "Now that you have completed testing the Catalyst Whisper Coach extension, please share your overall experience. Your feedback will help us improve the extension before public release."
+  }
+}

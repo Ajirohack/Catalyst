@@ -1,9 +1,14 @@
-# Python
+# Logs
+logs/
+*.log
+
+# Python cache files
 __pycache__/
 *.py[cod]
-*$py.class
+*.class
 *.so
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -15,33 +20,15 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
-env/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.benchmarks/
-
-# Logs
-logs/
-*.log
+# Node modules
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
 
 # Environment variables
 .env
@@ -50,11 +37,23 @@ logs/
 .env.test.local
 .env.production.local
 
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
 
-# Temporary files
-/var/folders/
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Qodo files
-.qodo/
+# Test data
+test_results/

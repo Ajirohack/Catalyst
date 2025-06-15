@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to Catalyst Whisper Coach</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f9f9f9;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 20px;
+        text-align: center;
+      }
+
+      .header h1 {
+        margin: 0 0 10px 0;
+        font-size: 32px;
+        font-weight: 600;
+      }
+
+      .header p {
+        margin: 0;
+        font-size: 18px;
+        opacity: 0.9;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .section {
+        margin-bottom: 40px;
+      }
+
+      h2 {
+        font-size: 24px;
+        margin: 0 0 20px 0;
+        color: #4a5568;
+      }
+
+      h3 {
+        font-size: 18px;
+        margin: 20px 0 10px 0;
+        color: #4a5568;
+      }
+
+      p {
+        margin: 0 0 15px 0;
+      }
+
+      ul {
+        padding-left: 20px;
+      }
+
+      li {
+        margin-bottom: 8px;
+      }
+
+      .step {
+        display: flex;
+        margin-bottom: 30px;
+        align-items: flex-start;
+      }
+
+      .step-number {
+        background: #667eea;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+        flex-shrink: 0;
+      }
+
+      .step-content {
+        flex: 1;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .tip {
+        background: #e6f7ff;
+        border-left: 4px solid #1890ff;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 4px 4px 0;
+      }
+
+      .warning {
+        background: #fff7e6;
+        border-left: 4px solid #fa8c16;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 4px 4px 0;
+      }
+
+      .btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.3s;
+        display: inline-block;
+        text-decoration: none;
+      }
+
+      .btn:hover {
+        background: #5a6bd6;
+      }
+
+      .footer {
+        background: #f1f1f1;
+        padding: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+        border-top: 1px solid #ddd;
+      }
+
+      .platforms {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .platform {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        width: calc(25% - 12px);
+        text-align: center;
+      }
+
+      .platform img {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 10px;
+      }
+
+      @media (max-width: 768px) {
+        .platform {
+          width: calc(50% - 10px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Welcome to Catalyst Whisper Coach</h1>
+      <p>Your AI-powered relationship communication assistant</p>
+    </div>
+
+    <div class="container">
+      <div class="section">
+        <h2>Getting Started</h2>
+        <p>
+          Catalyst Whisper Coach analyzes your conversations across multiple
+          platforms and provides real-time coaching to improve your
+          communication. Here's how to get started:
+        </p>
+
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Sign In to Your Account</h3>
+            <p>
+              Click the Catalyst icon in your browser toolbar and sign in with
+              the same credentials you use on the Catalyst web platform.
+            </p>
+            <div class="tip">
+              Don't have an account yet? Visit
+              <a href="http://localhost:8000/signup" target="_blank"
+                >our website</a
+              >
+              to create one.
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Enable for Your Messaging Platforms</h3>
+            <p>The extension works with these platforms:</p>
+            <div class="platforms">
+              <div class="platform">
+                <img src="icons/whatsapp.png" alt="WhatsApp" />
+                <div>WhatsApp</div>
+              </div>
+              <div class="platform">
+                <img src="icons/messenger.png" alt="Messenger" />
+                <div>Messenger</div>
+              </div>
+              <div class="platform">
+                <img src="icons/instagram.png" alt="Instagram" />
+                <div>Instagram</div>
+              </div>
+              <div class="platform">
+                <img src="icons/discord.png" alt="Discord" />
+                <div>Discord</div>
+              </div>
+              <div class="platform">
+                <img src="icons/slack.png" alt="Slack" />
+                <div>Slack</div>
+              </div>
+              <div class="platform">
+                <img src="icons/teams.png" alt="Teams" />
+                <div>Teams</div>
+              </div>
+              <div class="platform">
+                <img src="icons/telegram.png" alt="Telegram" />
+                <div>Telegram</div>
+              </div>
+            </div>
+            <p>
+              By default, all platforms are enabled. You can customize this in
+              the extension settings.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Start Chatting</h3>
+            <p>
+              Open any supported messaging platform and start a conversation.
+              The extension will automatically analyze your messages and provide
+              coaching suggestions in real-time.
+            </p>
+            <div class="warning">
+              For privacy reasons, the extension only analyzes messages when
+              you're actively chatting and doesn't store the full content of
+              your conversations.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>How It Works</h2>
+        <div class="card">
+          <h3>Real-time Analysis</h3>
+          <p>The extension monitors your conversation and analyzes:</p>
+          <ul>
+            <li>Sentiment and emotional tone</li>
+            <li>Communication patterns</li>
+            <li>Potential misunderstandings</li>
+            <li>Opportunities for deeper connection</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Whisper Suggestions</h3>
+          <p>
+            Based on the analysis, you'll receive "whispers" - coaching
+            suggestions that appear in a small widget. These whispers help you:
+          </p>
+          <ul>
+            <li>Respond more effectively</li>
+            <li>Navigate difficult conversations</li>
+            <li>Express yourself more clearly</li>
+            <li>Build stronger connections</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Privacy-Focused</h3>
+          <p>Your privacy is important to us:</p>
+          <ul>
+            <li>Message content is processed securely</li>
+            <li>You can enable "Privacy Mode" to limit data sent to servers</li>
+            <li>No full conversation logs are stored</li>
+            <li>You control which platforms are monitored</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Customizing Your Experience</h2>
+        <p>Click the Catalyst icon and go to Settings to customize:</p>
+        <ul>
+          <li>
+            <strong>Platforms:</strong> Enable or disable specific messaging
+            platforms
+          </li>
+          <li>
+            <strong>Analysis Frequency:</strong> How often the extension
+            analyzes messages
+          </li>
+          <li>
+            <strong>Whisper Settings:</strong> How suggestions appear and how
+            long they stay visible
+          </li>
+          <li>
+            <strong>Privacy Mode:</strong> Limit data sent to servers for more
+            privacy
+          </li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Ready to Get Started?</h2>
+        <p>
+          Click the Catalyst icon in your browser toolbar to open the extension
+          and sign in.
+        </p>
+        <a href="#" class="btn" id="open-extension-btn"
+          >Open Catalyst Whisper Coach</a
+        >
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Catalyst Whisper Coach v1.0.0</div>
+      <div>© 2025 Catalyst. All rights reserved.</div>
+    </div>
+
+    <script>
+      document
+        .getElementById("open-extension-btn")
+        .addEventListener("click", (e) => {
+          e.preventDefault();
+          chrome.runtime.sendMessage({ type: "OPEN_POPUP" });
+        });
+    </script>
+  </body>
+</html>

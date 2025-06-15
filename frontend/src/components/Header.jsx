@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   AppBar,
   Toolbar,
@@ -12,7 +12,7 @@ import {
   Divider,
   Chip,
   Button,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Psychology as WhisperIcon,
   Notifications as NotificationsIcon,
@@ -21,8 +21,8 @@ import {
   Logout as LogoutIcon,
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
+} from "@mui/icons-material";
+import { motion } from "framer-motion";
 
 const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -52,42 +52,42 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
   const mockNotifications = [
     {
       id: 1,
-      title: 'New Analysis Complete',
-      message: 'Your communication analysis is ready',
-      time: '2 min ago',
+      title: "New Analysis Complete",
+      message: "Your communication analysis is ready",
+      time: "2 min ago",
       unread: true,
     },
     {
       id: 2,
-      title: 'Milestone Achieved',
+      title: "Milestone Achieved",
       message: 'You\'ve completed "Better Listening" goal',
-      time: '1 hour ago',
+      time: "1 hour ago",
       unread: true,
     },
     {
       id: 3,
-      title: 'Weekly Report',
-      message: 'Your relationship insights are available',
-      time: '1 day ago',
+      title: "Weekly Report",
+      message: "Your relationship insights are available",
+      time: "1 day ago",
       unread: false,
     },
   ];
 
-  const unreadCount = mockNotifications.filter(n => n.unread).length;
+  const unreadCount = mockNotifications.filter((n) => n.unread).length;
 
   return (
     <AppBar
       position="static"
       elevation={0}
       sx={{
-        backgroundColor: 'background.paper',
-        borderBottom: '1px solid #e2e8f0',
-        color: 'text.primary',
+        backgroundColor: "background.paper",
+        borderBottom: "1px solid #e2e8f0",
+        color: "text.primary",
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between', px: 3 }}>
+      <Toolbar sx={{ justifyContent: "space-between", px: 3 }}>
         {/* Left side - Page title and breadcrumb */}
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
           <Typography variant="h6" fontWeight={600} color="text.primary">
             Dashboard
           </Typography>
@@ -95,29 +95,26 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
             label="Live"
             size="small"
             color="success"
-            sx={{ ml: 2, fontSize: '0.7rem' }}
+            sx={{ ml: 2, fontSize: "0.7rem" }}
           />
         </Box>
 
         {/* Right side - Actions and user menu */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {/* Theme toggle */}
           <IconButton onClick={toggleTheme} color="inherit">
             {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
 
           {/* Whisper toggle */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               variant={whisperPanelOpen ? "contained" : "outlined"}
               startIcon={<WhisperIcon />}
               onClick={onWhisperToggle}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 500,
               }}
             >
@@ -137,16 +134,13 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
           </IconButton>
 
           {/* Profile menu */}
-          <IconButton
-            onClick={handleProfileMenuOpen}
-            sx={{ ml: 1 }}
-          >
+          <IconButton onClick={handleProfileMenuOpen} sx={{ ml: 1 }}>
             <Avatar
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: 'primary.main',
-                fontSize: '0.9rem',
+                bgcolor: "primary.main",
+                fontSize: "0.9rem",
               }}
             >
               JD
@@ -167,7 +161,7 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
             },
           }}
         >
-          <Box sx={{ p: 2, borderBottom: '1px solid #e2e8f0' }}>
+          <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0" }}>
             <Typography variant="h6" fontWeight={600}>
               Notifications
             </Typography>
@@ -175,19 +169,27 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
               {unreadCount} unread notifications
             </Typography>
           </Box>
-          
+
           {mockNotifications.map((notification) => (
             <MenuItem
               key={notification.id}
               onClick={handleNotificationMenuClose}
               sx={{
                 py: 2,
-                borderBottom: '1px solid #f1f5f9',
-                backgroundColor: notification.unread ? 'primary.50' : 'transparent',
+                borderBottom: "1px solid #f1f5f9",
+                backgroundColor: notification.unread
+                  ? "primary.50"
+                  : "transparent",
               }}
             >
-              <Box sx={{ width: '100%' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+              <Box sx={{ width: "100%" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 0.5,
+                  }}
+                >
                   <Typography variant="subtitle2" fontWeight={600}>
                     {notification.title}
                   </Typography>
@@ -196,13 +198,17 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
                       sx={{
                         width: 8,
                         height: 8,
-                        borderRadius: '50%',
-                        bgcolor: 'primary.main',
+                        borderRadius: "50%",
+                        bgcolor: "primary.main",
                       }}
                     />
                   )}
                 </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 0.5 }}
+                >
                   {notification.message}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -211,8 +217,8 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
               </Box>
             </MenuItem>
           ))}
-          
-          <Box sx={{ p: 2, textAlign: 'center' }}>
+
+          <Box sx={{ p: 2, textAlign: "center" }}>
             <Button size="small" color="primary">
               View All Notifications
             </Button>
@@ -231,7 +237,7 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
             },
           }}
         >
-          <Box sx={{ p: 2, borderBottom: '1px solid #e2e8f0' }}>
+          <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0" }}>
             <Typography variant="subtitle1" fontWeight={600}>
               John Doe
             </Typography>
@@ -239,19 +245,19 @@ const Header = ({ onWhisperToggle, whisperPanelOpen }) => {
               john.doe@example.com
             </Typography>
           </Box>
-          
+
           <MenuItem onClick={handleProfileMenuClose}>
             <AccountIcon sx={{ mr: 2 }} />
             Profile
           </MenuItem>
-          
+
           <MenuItem onClick={handleProfileMenuClose}>
             <SettingsIcon sx={{ mr: 2 }} />
             Settings
           </MenuItem>
-          
+
           <Divider />
-          
+
           <MenuItem onClick={handleProfileMenuClose}>
             <LogoutIcon sx={{ mr: 2 }} />
             Sign Out

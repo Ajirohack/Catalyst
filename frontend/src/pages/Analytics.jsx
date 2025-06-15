@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -21,7 +21,7 @@ import {
   Avatar,
   LinearProgress,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
 import {
   TrendingUp as TrendUpIcon,
   TrendingDown as TrendDownIcon,
@@ -35,8 +35,8 @@ import {
   Group as GroupIcon,
   Star as StarIcon,
   Download as DownloadIcon,
-} from '@mui/icons-material';
-import { motion } from 'framer-motion';
+} from "@mui/icons-material";
+import { motion } from "framer-motion";
 import {
   LineChart,
   Line,
@@ -58,20 +58,30 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-} from 'recharts';
-import toast from 'react-hot-toast';
+} from "recharts";
+import toast from "react-hot-toast";
 
 const Analytics = () => {
-  const [selectedProject, setSelectedProject] = useState('all');
-  const [selectedTimeRange, setSelectedTimeRange] = useState('30');
-  const [selectedMetric, setSelectedMetric] = useState('overall');
+  const [selectedProject, setSelectedProject] = useState("all");
+  const [selectedTimeRange, setSelectedTimeRange] = useState("30");
+  const [selectedMetric, setSelectedMetric] = useState("overall");
 
   // Mock data
   const projects = [
-    { id: 1, name: 'Improving Communication', type: 'romantic', color: '#e91e63' },
-    { id: 2, name: 'Family Bonding', type: 'family', color: '#2196f3' },
-    { id: 3, name: 'Workplace Relationships', type: 'professional', color: '#ff9800' },
-    { id: 4, name: 'Friendship Circle', type: 'friendship', color: '#4caf50' },
+    {
+      id: 1,
+      name: "Improving Communication",
+      type: "romantic",
+      color: "#e91e63",
+    },
+    { id: 2, name: "Family Bonding", type: "family", color: "#2196f3" },
+    {
+      id: 3,
+      name: "Workplace Relationships",
+      type: "professional",
+      color: "#ff9800",
+    },
+    { id: 4, name: "Friendship Circle", type: "friendship", color: "#4caf50" },
   ];
 
   const overallMetrics = {
@@ -84,93 +94,155 @@ const Analytics = () => {
   };
 
   const trendData = [
-    { date: 'Week 1', communication: 60, sentiment: 65, engagement: 70, overall: 65 },
-    { date: 'Week 2', communication: 65, sentiment: 70, engagement: 75, overall: 70 },
-    { date: 'Week 3', communication: 72, sentiment: 75, engagement: 78, overall: 75 },
-    { date: 'Week 4', communication: 75, sentiment: 80, engagement: 82, overall: 79 },
-    { date: 'Week 5', communication: 78, sentiment: 82, engagement: 85, overall: 82 },
+    {
+      date: "Week 1",
+      communication: 60,
+      sentiment: 65,
+      engagement: 70,
+      overall: 65,
+    },
+    {
+      date: "Week 2",
+      communication: 65,
+      sentiment: 70,
+      engagement: 75,
+      overall: 70,
+    },
+    {
+      date: "Week 3",
+      communication: 72,
+      sentiment: 75,
+      engagement: 78,
+      overall: 75,
+    },
+    {
+      date: "Week 4",
+      communication: 75,
+      sentiment: 80,
+      engagement: 82,
+      overall: 79,
+    },
+    {
+      date: "Week 5",
+      communication: 78,
+      sentiment: 82,
+      engagement: 85,
+      overall: 82,
+    },
   ];
 
   const projectPerformance = [
-    { name: 'Communication', score: 78, change: 12, trend: 'up', analyses: 15, goals: 4 },
-    { name: 'Family Bonding', score: 65, change: 8, trend: 'up', analyses: 12, goals: 3 },
-    { name: 'Professional', score: 45, change: -2, trend: 'down', analyses: 8, goals: 2 },
-    { name: 'Friendship', score: 85, change: 5, trend: 'up', analyses: 10, goals: 3 },
+    {
+      name: "Communication",
+      score: 78,
+      change: 12,
+      trend: "up",
+      analyses: 15,
+      goals: 4,
+    },
+    {
+      name: "Family Bonding",
+      score: 65,
+      change: 8,
+      trend: "up",
+      analyses: 12,
+      goals: 3,
+    },
+    {
+      name: "Professional",
+      score: 45,
+      change: -2,
+      trend: "down",
+      analyses: 8,
+      goals: 2,
+    },
+    {
+      name: "Friendship",
+      score: 85,
+      change: 5,
+      trend: "up",
+      analyses: 10,
+      goals: 3,
+    },
   ];
 
   const communicationPatterns = [
-    { time: '6 AM', messages: 5, sentiment: 70 },
-    { time: '9 AM', messages: 15, sentiment: 65 },
-    { time: '12 PM', messages: 25, sentiment: 75 },
-    { time: '3 PM', messages: 20, sentiment: 80 },
-    { time: '6 PM', messages: 35, sentiment: 85 },
-    { time: '9 PM', messages: 30, sentiment: 90 },
-    { time: '12 AM', messages: 10, sentiment: 75 },
+    { time: "6 AM", messages: 5, sentiment: 70 },
+    { time: "9 AM", messages: 15, sentiment: 65 },
+    { time: "12 PM", messages: 25, sentiment: 75 },
+    { time: "3 PM", messages: 20, sentiment: 80 },
+    { time: "6 PM", messages: 35, sentiment: 85 },
+    { time: "9 PM", messages: 30, sentiment: 90 },
+    { time: "12 AM", messages: 10, sentiment: 75 },
   ];
 
   const sentimentDistribution = [
-    { name: 'Very Positive', value: 35, color: '#4caf50' },
-    { name: 'Positive', value: 30, color: '#8bc34a' },
-    { name: 'Neutral', value: 20, color: '#ffc107' },
-    { name: 'Negative', value: 10, color: '#ff9800' },
-    { name: 'Very Negative', value: 5, color: '#f44336' },
+    { name: "Very Positive", value: 35, color: "#4caf50" },
+    { name: "Positive", value: 30, color: "#8bc34a" },
+    { name: "Neutral", value: 20, color: "#ffc107" },
+    { name: "Negative", value: 10, color: "#ff9800" },
+    { name: "Very Negative", value: 5, color: "#f44336" },
   ];
 
   const relationshipHealth = [
-    { category: 'Communication', score: 78, fullMark: 100 },
-    { category: 'Trust', score: 85, fullMark: 100 },
-    { category: 'Empathy', score: 72, fullMark: 100 },
-    { category: 'Conflict Resolution', score: 68, fullMark: 100 },
-    { category: 'Quality Time', score: 80, fullMark: 100 },
-    { category: 'Support', score: 88, fullMark: 100 },
+    { category: "Communication", score: 78, fullMark: 100 },
+    { category: "Trust", score: 85, fullMark: 100 },
+    { category: "Empathy", score: 72, fullMark: 100 },
+    { category: "Conflict Resolution", score: 68, fullMark: 100 },
+    { category: "Quality Time", score: 80, fullMark: 100 },
+    { category: "Support", score: 88, fullMark: 100 },
   ];
 
   const topInsights = [
     {
       id: 1,
-      title: 'Peak Communication Hours',
-      description: 'Most positive conversations happen between 6-9 PM',
-      impact: 'high',
-      category: 'timing',
-      project: 'Communication',
+      title: "Peak Communication Hours",
+      description: "Most positive conversations happen between 6-9 PM",
+      impact: "high",
+      category: "timing",
+      project: "Communication",
     },
     {
       id: 2,
-      title: 'Response Time Improvement',
-      description: 'Average response time decreased by 40% this month',
-      impact: 'high',
-      category: 'responsiveness',
-      project: 'Communication',
+      title: "Response Time Improvement",
+      description: "Average response time decreased by 40% this month",
+      impact: "high",
+      category: "responsiveness",
+      project: "Communication",
     },
     {
       id: 3,
-      title: 'Emotional Tone Patterns',
-      description: 'Positive language usage increased by 25%',
-      impact: 'medium',
-      category: 'sentiment',
-      project: 'Family Bonding',
+      title: "Emotional Tone Patterns",
+      description: "Positive language usage increased by 25%",
+      impact: "medium",
+      category: "sentiment",
+      project: "Family Bonding",
     },
     {
       id: 4,
-      title: 'Goal Achievement Rate',
-      description: '80% of weekly goals are being completed on time',
-      impact: 'medium',
-      category: 'goals',
-      project: 'All Projects',
+      title: "Goal Achievement Rate",
+      description: "80% of weekly goals are being completed on time",
+      impact: "medium",
+      category: "goals",
+      project: "All Projects",
     },
   ];
 
   const getImpactColor = (impact) => {
     switch (impact) {
-      case 'high': return 'error';
-      case 'medium': return 'warning';
-      case 'low': return 'info';
-      default: return 'default';
+      case "high":
+        return "error";
+      case "medium":
+        return "warning";
+      case "low":
+        return "info";
+      default:
+        return "default";
     }
   };
 
   const getTrendIcon = (trend) => {
-    return trend === 'up' ? (
+    return trend === "up" ? (
       <TrendUpIcon color="success" fontSize="small" />
     ) : (
       <TrendDownIcon color="error" fontSize="small" />
@@ -178,7 +250,7 @@ const Analytics = () => {
   };
 
   const handleExportData = () => {
-    toast.success('Analytics data exported successfully!');
+    toast.success("Analytics data exported successfully!");
   };
 
   const containerVariants = {
@@ -203,15 +275,18 @@ const Analytics = () => {
   };
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
+    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <Box sx={{ maxWidth: 1400, mx: "auto" }}>
         {/* Header */}
         <motion.div variants={itemVariants}>
-          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              mb: 4,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight="bold" gutterBottom>
                 Analytics Dashboard
@@ -292,8 +367,11 @@ const Analytics = () => {
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
-                  <AssessmentIcon color="primary" sx={{ fontSize: 32, mb: 1 }} />
+                <CardContent sx={{ textAlign: "center" }}>
+                  <AssessmentIcon
+                    color="primary"
+                    sx={{ fontSize: 32, mb: 1 }}
+                  />
                   <Typography variant="h5" fontWeight="bold">
                     {overallMetrics.totalProjects}
                   </Typography>
@@ -305,7 +383,7 @@ const Analytics = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <SpeedIcon color="success" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h5" fontWeight="bold">
                     {overallMetrics.averageScore}%
@@ -318,7 +396,7 @@ const Analytics = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <StarIcon color="warning" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h5" fontWeight="bold">
                     {overallMetrics.completedGoals}
@@ -331,7 +409,7 @@ const Analytics = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <AnalyticsIcon color="info" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h5" fontWeight="bold">
                     {overallMetrics.totalAnalyses}
@@ -344,7 +422,7 @@ const Analytics = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <TrendUpIcon color="success" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h5" fontWeight="bold">
                     +{overallMetrics.improvementRate}%
@@ -357,7 +435,7 @@ const Analytics = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={2}>
               <Card>
-                <CardContent sx={{ textAlign: 'center' }}>
+                <CardContent sx={{ textAlign: "center" }}>
                   <HeartIcon color="error" sx={{ fontSize: 32, mb: 1 }} />
                   <Typography variant="h5" fontWeight="bold">
                     {overallMetrics.activeProjects}
@@ -465,8 +543,19 @@ const Analytics = () => {
                       <YAxis yAxisId="right" orientation="right" />
                       <Tooltip />
                       <Legend />
-                      <Bar yAxisId="left" dataKey="messages" fill="#2196f3" name="Messages" />
-                      <Line yAxisId="right" type="monotone" dataKey="sentiment" stroke="#4caf50" name="Sentiment" />
+                      <Bar
+                        yAxisId="left"
+                        dataKey="messages"
+                        fill="#2196f3"
+                        name="Messages"
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="sentiment"
+                        stroke="#4caf50"
+                        name="Sentiment"
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -490,7 +579,9 @@ const Analytics = () => {
                         cy="50%"
                         outerRadius={80}
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) =>
+                          `${name} ${(percent * 100).toFixed(0)}%`
+                        }
                       >
                         {sentimentDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
@@ -528,8 +619,20 @@ const Analytics = () => {
                         {projectPerformance.map((project) => (
                           <TableRow key={project.name}>
                             <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                }}
+                              >
+                                <Avatar
+                                  sx={{
+                                    width: 32,
+                                    height: 32,
+                                    bgcolor: "primary.main",
+                                  }}
+                                >
                                   {project.name[0]}
                                 </Avatar>
                                 {project.name}
@@ -541,18 +644,34 @@ const Analytics = () => {
                               </Typography>
                             </TableCell>
                             <TableCell align="center">
-                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  gap: 0.5,
+                                }}
+                              >
                                 {getTrendIcon(project.trend)}
                                 <Typography
                                   variant="body2"
-                                  color={project.trend === 'up' ? 'success.main' : 'error.main'}
+                                  color={
+                                    project.trend === "up"
+                                      ? "success.main"
+                                      : "error.main"
+                                  }
                                 >
-                                  {project.change > 0 ? '+' : ''}{project.change}%
+                                  {project.change > 0 ? "+" : ""}
+                                  {project.change}%
                                 </Typography>
                               </Box>
                             </TableCell>
-                            <TableCell align="center">{project.analyses}</TableCell>
-                            <TableCell align="center">{project.goals}</TableCell>
+                            <TableCell align="center">
+                              {project.analyses}
+                            </TableCell>
+                            <TableCell align="center">
+                              {project.goals}
+                            </TableCell>
                             <TableCell align="center">
                               <LinearProgress
                                 variant="determinate"
@@ -578,10 +697,19 @@ const Analytics = () => {
                   <Typography variant="h6" gutterBottom>
                     Key Insights
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                  >
                     {topInsights.map((insight) => (
                       <Paper key={insight.id} sx={{ p: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            mb: 1,
+                          }}
+                        >
                           <Typography variant="subtitle2" fontWeight="bold">
                             {insight.title}
                           </Typography>
@@ -592,11 +720,25 @@ const Analytics = () => {
                             variant="outlined"
                           />
                         </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 1 }}
+                        >
                           {insight.description}
                         </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Chip label={insight.category} size="small" variant="outlined" />
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Chip
+                            label={insight.category}
+                            size="small"
+                            variant="outlined"
+                          />
                           <Typography variant="caption" color="text.secondary">
                             {insight.project}
                           </Typography>
