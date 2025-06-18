@@ -28,9 +28,12 @@
   let whisperWidget = null;
   let processingQueue = [];
   let isProcessing = false;
+  let apiBaseUrl = '';
 
-  // Platform-specific selectors
-  const PLATFORM_SELECTORS = {
+  // Import platform selectors from external file if available
+  // This is loaded via the manifest.json before content_script.js
+  const PLATFORM_SELECTORS = window.PLATFORM_SELECTORS || {
+    // Fallback to default selectors if the external file failed to load
     'web.whatsapp.com': {
       messageContainer: '[data-testid="conversation-panel-messages"]',
       messages: '[data-testid="msg-container"]',
@@ -39,384 +42,390 @@
       timestamp: '[data-testid="msg-meta"] span[title]',
       inputField: '[data-testid="conversation-compose-box-input"]',
       sendButton: '[data-testid="compose-btn-send"]'
-    },
-    'www.messenger.com': {
-      messageContainer: '[role="main"] [data-testid="conversation"]',
-      messages: '[data-testid="message_container"]',
-      messageText: '[data-testid="message_text"]',
-      sender: '[data-testid="message_sender"]',
-      timestamp: '[data-testid="message_timestamp"]',
-      inputField: '[contenteditable="true"][role="textbox"]',
-      sendButton: '[data-testid="send_button"]'
-    },
-    'instagram.com': {
-      messageContainer: 'div[role="dialog"] div[style*="overflow-y: auto"]',
-      messages: 'div[role="row"]',
-      messageText: 'div[style*="max-width"] > div > div > span',
-      sender: 'div[role="row"] h4',
-      timestamp: 'time',
-      inputField: 'div[contenteditable="true"]',
-      sendButton: 'button[type="submit"]'
-    },
-    'www.facebook.com': {
-      messageContainer: '[role="main"] [data-pagelet="MWChat"]',
-      messages: '[data-testid="message_container"]',
-      messageText: '[data-testid="message_text"]',
-      sender: '[data-testid="message_sender"]',
-      timestamp: '[data-testid="message_timestamp"]',
-      inputField: '[contenteditable="true"][role="textbox"]',
-      sendButton: '[data-testid="send_button"]'
-    },
-    'discord.com': {
-      messageContainer: '[data-list-id="chat-messages"]',
-      messages: '[id^="chat-messages-"]',
-      messageText: '[id^="message-content-"]',
-      sender: '.username',
-      timestamp: '.timestamp',
-      inputField: '[role="textbox"][data-slate-editor="true"]',
-      sendButton: '[data-testid="send-button"]'
-    },
-    'slack.com': {
-      messageContainer: '.c-virtual_list__scroll_container',
-      messages: '.c-message_kit__background',
-      messageText: '.c-message_kit__text',
-      sender: '.c-message__sender',
-      timestamp: '.c-timestamp',
-      inputField: '[data-qa="message_input"]',
-      sendButton: '[data-qa="send_message_button"]'
-    },
-    'teams.microsoft.com': {
-      messageContainer: '[data-tid="chat-pane-list"]',
-      messages: '[data-tid="chat-pane-message"]',
-      messageText: '[data-tid="message-body-content"]',
-      sender: '[data-tid="message-author-name"]',
-      timestamp: '[data-tid="message-timestamp"]',
-      inputField: '[data-tid="ckeditor"]',
-      sendButton: '[data-tid="send-message-button"]'
-    },
-    'telegram.org': {
-      messageContainer: '.messages-container',
-      messages: '.message',
-      messageText: '.message-content',
-      sender: '.peer-title',
-      timestamp: '.time',
+    }
+  };
+  messageContainer: '.chat-container__chat-list',
+    messages: '.chat-message__text-box',
+      messageText: '.chat-message__text',
+        sender: '.chat-message__sender',
+          timestamp: '.chat-message__time',
+            inputField: '.chat-message__input',
+              sendButton: '.chat-send-button'
+},
+  'chat.openai.com': {
+  messageContainer: '.react-scroll-to-bottom--css-gqgbgc-79elbk',
+    messages: '.group.w-full',
+      messageText: '.markdown',
+        sender: '.font-semibold',
+          timestamp: '.text-gray-400.text-xs',
+            inputField: '#prompt-textarea',
+              sendButton: 'button[data-testid="send-button"]'
+},
+'mail.google.com': { // Gmail
+  messageContainer: '.adn.ads',
+    messages: '.gs',
+      messageText: '.a3s.aiL',
+        sender: '.gD',
+          timestamp: '.g3',
+            inputField: '[role="textbox"][aria-label*="Body"]',
+              sendButton: '[data-tooltip="Send"]'
+},
+'linkedin.com': {
+  messageContainer: '.msg-conversations-container__conversations-list',
+    messages: '.msg-s-message-list__event',
+      messageText: '.msg-s-event-listitem__body',
+        sender: '.msg-s-message-group__name',
+          timestamp: '.msg-s-message-group__timestamp',
+            inputField: '.msg-form__contenteditable',
+              sendButton: '.msg-form__send-button'
+},
+'twitter.com': {
+  messageContainer: '[data-testid="DMDrawer"] [role="region"]',
+    messages: '[data-testid="messageEntry"]',
+      messageText: '[data-testid="tweetText"]',
+        sender: '[data-testid="User-Name"]',
+          timestamp: '[data-testid="timestamp"]',
+            inputField: '[data-testid="dmComposerTextInput"]',
+              sendButton: '[data-testid="dmComposerSendButton"]'
+},
+'outlook.live.com': {
+  messageContainer: '[role="main"]',
+    messages: '.ItemBody',
+      messageText: '.ReadMsgBody',
+        sender: '.ItemAddress',
+          timestamp: '.ItemDate',
+            inputField: '[contenteditable="true"][role="textbox"]',
+              sendButton: '[title="Send"]'
+},
+'reddit.com': {
+  messageContainer: '.ModeratorChatThreadPage',
+    messages: '.ChatMessage',
+      messageText: '.ChatMessage__body',
+        sender: '.ChatMessage__author',
+          timestamp: '.ChatMessage__timestamp',
+            inputField: '.ChatInput__textarea',
+              sendButton: 'button[type="submit"]'
+}
+messageText: '.message-content',
+  sender: '.peer-title',
+    timestamp: '.time',
       inputField: '#editable-message-text',
-      sendButton: '.btn-send'
+        sendButton: '.btn-send'
     }
   };
 
-  // Get current platform
-  const currentPlatform = window.location.hostname;
-  const selectors = PLATFORM_SELECTORS[currentPlatform];
+// Get current platform
+const currentPlatform = window.location.hostname;
+const selectors = PLATFORM_SELECTORS[currentPlatform];
 
-  if (!selectors) {
-    console.warn('Catalyst: Unsupported platform:', currentPlatform);
+if (!selectors) {
+  console.warn('Catalyst: Unsupported platform:', currentPlatform);
+  return;
+}
+
+// Initialize content script
+async function initialize() {
+  try {
+    // Get settings from background script
+    const response = await sendMessageToBackground('GET_SETTINGS');
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    isEnabled = response.enabled;
+
+    if (!isEnabled) {
+      console.log('Catalyst: Extension disabled');
+      return;
+    }
+
+    // Get active project
+    const projectResponse = await sendMessageToBackground('GET_ACTIVE_PROJECT');
+    activeProject = projectResponse.error ? null : projectResponse;
+
+    // Start monitoring messages
+    startMessageMonitoring();
+
+    // Create whisper widget
+    createWhisperWidget();
+
+    // Listen for background messages
+    chrome.runtime.onMessage.addListener(handleBackgroundMessage);
+
+    console.log('Catalyst: Content script initialized successfully');
+  } catch (error) {
+    console.error('Catalyst: Failed to initialize:', error);
+  }
+}
+
+// Start monitoring for new messages
+function startMessageMonitoring() {
+  const messageContainer = document.querySelector(selectors.messageContainer);
+
+  if (!messageContainer) {
+    console.warn('Catalyst: Message container not found, retrying...');
+    setTimeout(startMessageMonitoring, 2000);
     return;
   }
 
-  // Initialize content script
-  async function initialize() {
+  // Create mutation observer
+  messageObserver = new MutationObserver(debounce(handleDOMChanges, CONFIG.debounceDelay));
+
+  messageObserver.observe(messageContainer, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+
+  console.log('Catalyst: Message monitoring started');
+}
+
+// Handle DOM changes
+function handleDOMChanges(mutations) {
+  if (!isEnabled || !activeProject) {
+    return;
+  }
+
+  mutations.forEach(mutation => {
+    if (mutation.type === 'childList') {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const messages = node.matches && node.matches(selectors.messages)
+            ? [node]
+            : node.querySelectorAll(selectors.messages);
+
+          messages.forEach(processMessage);
+        }
+      });
+    }
+  });
+}
+
+// Process individual message
+async function processMessage(messageElement) {
+  try {
+    const messageData = extractMessageData(messageElement);
+
+    if (!messageData || !messageData.text || messageData.text === lastProcessedMessage) {
+      return;
+    }
+
+    lastProcessedMessage = messageData.text;
+
+    // Add to processing queue
+    processingQueue.push(messageData);
+
+    // Process queue if not already processing
+    if (!isProcessing) {
+      processMessageQueue();
+    }
+  } catch (error) {
+    console.error('Catalyst: Failed to process message:', error);
+  }
+}
+
+// Process message queue
+async function processMessageQueue() {
+  if (isProcessing || processingQueue.length === 0) {
+    return;
+  }
+
+  isProcessing = true;
+
+  while (processingQueue.length > 0) {
+    const messageData = processingQueue.shift();
+
     try {
-      // Get settings from background script
-      const response = await sendMessageToBackground('GET_SETTINGS');
-      if (response.error) {
-        throw new Error(response.error);
-      }
+      // Get recent conversation history for context
+      const conversationHistory = await getConversationHistory();
 
-      isEnabled = response.enabled;
-
-      if (!isEnabled) {
-        console.log('Catalyst: Extension disabled');
-        return;
-      }
-
-      // Get active project
-      const projectResponse = await sendMessageToBackground('GET_ACTIVE_PROJECT');
-      activeProject = projectResponse.error ? null : projectResponse;
-
-      // Start monitoring messages
-      startMessageMonitoring();
-
-      // Create whisper widget
-      createWhisperWidget();
-
-      // Listen for background messages
-      chrome.runtime.onMessage.addListener(handleBackgroundMessage);
-
-      console.log('Catalyst: Content script initialized successfully');
+      // Analyze message with conversation context
+      await analyzeMessageWithContext(messageData, conversationHistory);
     } catch (error) {
-      console.error('Catalyst: Failed to initialize:', error);
+      console.error('Catalyst: Failed to analyze message:', error);
     }
+
+    // Small delay between processing
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  // Start monitoring for new messages
-  function startMessageMonitoring() {
-    const messageContainer = document.querySelector(selectors.messageContainer);
+  isProcessing = false;
+}
 
-    if (!messageContainer) {
-      console.warn('Catalyst: Message container not found, retrying...');
-      setTimeout(startMessageMonitoring, 2000);
-      return;
-    }
+// Get recent conversation history
+async function getConversationHistory(limit = 10) {
+  try {
+    const messages = document.querySelectorAll(selectors.messages);
+    const history = [];
 
-    // Create mutation observer
-    messageObserver = new MutationObserver(debounce(handleDOMChanges, CONFIG.debounceDelay));
+    // Process the last 'limit' messages (or fewer if not available)
+    const startIdx = Math.max(0, messages.length - limit);
 
-    messageObserver.observe(messageContainer, {
-      childList: true,
-      subtree: true,
-      characterData: true
-    });
-
-    console.log('Catalyst: Message monitoring started');
-  }
-
-  // Handle DOM changes
-  function handleDOMChanges(mutations) {
-    if (!isEnabled || !activeProject) {
-      return;
-    }
-
-    mutations.forEach(mutation => {
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const messages = node.matches && node.matches(selectors.messages)
-              ? [node]
-              : node.querySelectorAll(selectors.messages);
-
-            messages.forEach(processMessage);
-          }
+    for (let i = startIdx; i < messages.length; i++) {
+      const messageData = extractMessageData(messages[i]);
+      if (messageData) {
+        history.push({
+          content: messageData.text,
+          sender: messageData.sender,
+          timestamp: messageData.timestamp,
+          platform: currentPlatform
         });
       }
-    });
-  }
-
-  // Process individual message
-  async function processMessage(messageElement) {
-    try {
-      const messageData = extractMessageData(messageElement);
-
-      if (!messageData || !messageData.text || messageData.text === lastProcessedMessage) {
-        return;
-      }
-
-      lastProcessedMessage = messageData.text;
-
-      // Add to processing queue
-      processingQueue.push(messageData);
-
-      // Process queue if not already processing
-      if (!isProcessing) {
-        processMessageQueue();
-      }
-    } catch (error) {
-      console.error('Catalyst: Failed to process message:', error);
     }
-  }
 
-  // Process message queue
-  async function processMessageQueue() {
-    if (isProcessing || processingQueue.length === 0) {
+    return history;
+  } catch (error) {
+    console.error('Catalyst: Failed to get conversation history:', error);
+    return [];
+  }
+}
+
+// Send message for analysis with conversation context
+async function analyzeMessageWithContext(messageData, conversationHistory) {
+  try {
+    // First, get project settings for API authentication
+    const settings = await sendMessageToBackground('GET_SETTINGS');
+    const token = settings.apiToken;
+
+    if (!token) {
+      console.warn('Catalyst: No API token available for message analysis');
       return;
     }
 
-    isProcessing = true;
+    // Prepare whisper data
+    const whisperData = {
+      context: messageData.text,
+      conversation: conversationHistory,
+      project_id: activeProject ? activeProject.id : null,
+      platform: currentPlatform,
+      urgency: 'normal',
+      frequency: settings.whisperSettings?.whisperFrequency || 'medium'
+    };
 
-    while (processingQueue.length > 0) {
-      const messageData = processingQueue.shift();
+    // Send to background for API request to avoid CORS issues
+    const response = await sendMessageToBackground('ANALYZE_WHISPER', whisperData);
 
-      try {
-        // Get recent conversation history for context
-        const conversationHistory = await getConversationHistory();
-
-        // Analyze message with conversation context
-        await analyzeMessageWithContext(messageData, conversationHistory);
-      } catch (error) {
-        console.error('Catalyst: Failed to analyze message:', error);
-      }
-
-      // Small delay between processing
-      await new Promise(resolve => setTimeout(resolve, 100));
+    if (response.error) {
+      console.error('Catalyst: Whisper analysis failed:', response.error);
+      return;
     }
 
-    isProcessing = false;
-  }
-
-  // Get recent conversation history
-  async function getConversationHistory(limit = 10) {
-    try {
-      const messages = document.querySelectorAll(selectors.messages);
-      const history = [];
-
-      // Process the last 'limit' messages (or fewer if not available)
-      const startIdx = Math.max(0, messages.length - limit);
-
-      for (let i = startIdx; i < messages.length; i++) {
-        const messageData = extractMessageData(messages[i]);
-        if (messageData) {
-          history.push({
-            content: messageData.text,
-            sender: messageData.sender,
-            timestamp: messageData.timestamp,
-            platform: currentPlatform
-          });
-        }
-      }
-
-      return history;
-    } catch (error) {
-      console.error('Catalyst: Failed to get conversation history:', error);
-      return [];
+    if (response.success && response.analysis) {
+      handleAnalysisResult(response.analysis, messageData);
     }
+  } catch (error) {
+    console.error('Catalyst: Failed to send message for analysis:', error);
   }
+}
 
-  // Send message for analysis with conversation context
-  async function analyzeMessageWithContext(messageData, conversationHistory) {
-    try {
-      // First, get project settings for API authentication
-      const settings = await sendMessageToBackground('GET_SETTINGS');
-      const token = settings.apiToken;
+// Extract message data from DOM element
+function extractMessageData(messageElement) {
+  try {
+    const textElement = messageElement.querySelector(selectors.messageText);
+    const senderElement = messageElement.querySelector(selectors.sender);
+    const timestampElement = messageElement.querySelector(selectors.timestamp);
 
-      if (!token) {
-        console.warn('Catalyst: No API token available for message analysis');
-        return;
-      }
-
-      // Prepare whisper data
-      const whisperData = {
-        context: messageData.text,
-        conversation: conversationHistory,
-        project_id: activeProject ? activeProject.id : null,
-        platform: currentPlatform,
-        urgency: 'normal',
-        frequency: settings.whisperSettings?.whisperFrequency || 'medium'
-      };
-
-      // Send to background for API request to avoid CORS issues
-      const response = await sendMessageToBackground('ANALYZE_WHISPER', whisperData);
-
-      if (response.error) {
-        console.error('Catalyst: Whisper analysis failed:', response.error);
-        return;
-      }
-
-      if (response.success && response.analysis) {
-        handleAnalysisResult(response.analysis, messageData);
-      }
-    } catch (error) {
-      console.error('Catalyst: Failed to send message for analysis:', error);
-    }
-  }
-
-  // Extract message data from DOM element
-  function extractMessageData(messageElement) {
-    try {
-      const textElement = messageElement.querySelector(selectors.messageText);
-      const senderElement = messageElement.querySelector(selectors.sender);
-      const timestampElement = messageElement.querySelector(selectors.timestamp);
-
-      if (!textElement) {
-        return null;
-      }
-
-      const text = textElement.textContent?.trim();
-      if (!text || text.length > CONFIG.maxMessageLength) {
-        return null;
-      }
-
-      return {
-        text,
-        sender: senderElement?.textContent?.trim() || 'Unknown',
-        timestamp: extractTimestamp(timestampElement),
-        platform: currentPlatform,
-        url: window.location.href,
-        context: {
-          messageElement: messageElement.outerHTML.substring(0, 500), // Limited for privacy
-          conversationId: extractConversationId()
-        }
-      };
-    } catch (error) {
-      console.error('Catalyst: Failed to extract message data:', error);
+    if (!textElement) {
       return null;
     }
-  }
 
-  // Extract timestamp from element
-  function extractTimestamp(timestampElement) {
-    if (!timestampElement) {
-      return Date.now();
+    const text = textElement.textContent?.trim();
+    if (!text || text.length > CONFIG.maxMessageLength) {
+      return null;
     }
 
-    const title = timestampElement.getAttribute('title');
-    const text = timestampElement.textContent;
-
-    // Try to parse various timestamp formats
-    const timeString = title || text;
-    const parsed = new Date(timeString);
-
-    return isNaN(parsed.getTime()) ? Date.now() : parsed.getTime();
-  }
-
-  // Extract conversation ID for context
-  function extractConversationId() {
-    const url = new URL(window.location.href);
-
-    switch (currentPlatform) {
-      case 'web.whatsapp.com':
-        return url.pathname.split('/').pop() || 'unknown';
-      case 'www.messenger.com':
-        return url.pathname.split('/t/')[1] || 'unknown';
-      case 'discord.com':
-        return url.pathname.split('/channels/')[1] || 'unknown';
-      default:
-        return 'unknown';
-    }
-  }
-
-  // Send message for analysis
-  async function analyzeMessage(messageData) {
-    try {
-      const response = await sendMessageToBackground('ANALYZE_MESSAGE', messageData);
-
-      if (response.error) {
-        console.error('Catalyst: Analysis failed:', response.error);
-        return;
-      }
-
-      if (response.success && response.analysis) {
-        handleAnalysisResult(response.analysis, messageData);
-      }
-    } catch (error) {
-      console.error('Catalyst: Failed to send message for analysis:', error);
-    }
-  }
-
-  // Handle analysis result
-  function handleAnalysisResult(analysis, originalMessage) {
-    // Track analysis event
-    sendMessageToBackground('TRACK_EVENT', {
-      type: 'message_analyzed',
+    return {
+      text,
+      sender: senderElement?.textContent?.trim() || 'Unknown',
+      timestamp: extractTimestamp(timestampElement),
       platform: currentPlatform,
-      sentiment: analysis.sentiment,
-      messageLength: originalMessage.text.length
-    });
+      url: window.location.href,
+      context: {
+        messageElement: messageElement.outerHTML.substring(0, 500), // Limited for privacy
+        conversationId: extractConversationId()
+      }
+    };
+  } catch (error) {
+    console.error('Catalyst: Failed to extract message data:', error);
+    return null;
+  }
+}
 
-    // Show whisper suggestions if available
-    if (analysis.suggestions && analysis.suggestions.length > 0) {
-      showWhisperSuggestions(analysis.suggestions);
-    }
+// Extract timestamp from element
+function extractTimestamp(timestampElement) {
+  if (!timestampElement) {
+    return Date.now();
   }
 
-  // Create whisper widget
-  function createWhisperWidget() {
-    if (whisperWidget) {
+  const title = timestampElement.getAttribute('title');
+  const text = timestampElement.textContent;
+
+  // Try to parse various timestamp formats
+  const timeString = title || text;
+  const parsed = new Date(timeString);
+
+  return isNaN(parsed.getTime()) ? Date.now() : parsed.getTime();
+}
+
+// Extract conversation ID for context
+function extractConversationId() {
+  const url = new URL(window.location.href);
+
+  switch (currentPlatform) {
+    case 'web.whatsapp.com':
+      return url.pathname.split('/').pop() || 'unknown';
+    case 'www.messenger.com':
+      return url.pathname.split('/t/')[1] || 'unknown';
+    case 'discord.com':
+      return url.pathname.split('/channels/')[1] || 'unknown';
+    default:
+      return 'unknown';
+  }
+}
+
+// Send message for analysis
+async function analyzeMessage(messageData) {
+  try {
+    const response = await sendMessageToBackground('ANALYZE_MESSAGE', messageData);
+
+    if (response.error) {
+      console.error('Catalyst: Analysis failed:', response.error);
       return;
     }
 
-    whisperWidget = document.createElement('div');
-    whisperWidget.id = 'catalyst-whisper-widget';
-    whisperWidget.innerHTML = `
+    if (response.success && response.analysis) {
+      handleAnalysisResult(response.analysis, messageData);
+    }
+  } catch (error) {
+    console.error('Catalyst: Failed to send message for analysis:', error);
+  }
+}
+
+// Handle analysis result
+function handleAnalysisResult(analysis, originalMessage) {
+  // Track analysis event
+  sendMessageToBackground('TRACK_EVENT', {
+    type: 'message_analyzed',
+    platform: currentPlatform,
+    sentiment: analysis.sentiment,
+    messageLength: originalMessage.text.length
+  });
+
+  // Show whisper suggestions if available
+  if (analysis.suggestions && analysis.suggestions.length > 0) {
+    showWhisperSuggestions(analysis.suggestions);
+  }
+}
+
+// Create whisper widget
+function createWhisperWidget() {
+  if (whisperWidget) {
+    return;
+  }
+
+  whisperWidget = document.createElement('div');
+  whisperWidget.id = 'catalyst-whisper-widget';
+  whisperWidget.innerHTML = `
       <div class="catalyst-whisper-container">
         <div class="catalyst-whisper-header">
           <span class="catalyst-whisper-title">💡 Catalyst Suggestion</span>
@@ -432,9 +441,9 @@
       </div>
     `;
 
-    // Add styles
-    const styles = document.createElement('style');
-    styles.textContent = `
+  // Add styles
+  const styles = document.createElement('style');
+  styles.textContent = `
       #catalyst-whisper-widget {
         position: fixed;
         top: 20px;
@@ -539,135 +548,306 @@
       }
     `;
 
-    document.head.appendChild(styles);
-    document.body.appendChild(whisperWidget);
+  document.head.appendChild(styles);
+  document.body.appendChild(whisperWidget);
 
-    // Add event listeners
-    whisperWidget.querySelector('.catalyst-whisper-close').addEventListener('click', hideWhisperWidget);
-    whisperWidget.querySelector('.catalyst-whisper-dismiss').addEventListener('click', hideWhisperWidget);
-    whisperWidget.querySelector('.catalyst-whisper-apply').addEventListener('click', applyWhisperSuggestion);
+  // Add event listeners
+  whisperWidget.querySelector('.catalyst-whisper-close').addEventListener('click', hideWhisperWidget);
+  whisperWidget.querySelector('.catalyst-whisper-dismiss').addEventListener('click', hideWhisperWidget);
+  whisperWidget.querySelector('.catalyst-whisper-apply').addEventListener('click', applyWhisperSuggestion);
+}
+
+// Show whisper suggestions
+function showWhisperSuggestions(suggestions) {
+  if (!whisperWidget || suggestions.length === 0) {
+    return;
   }
 
-  // Show whisper suggestions
-  function showWhisperSuggestions(suggestions) {
-    if (!whisperWidget || suggestions.length === 0) {
-      return;
-    }
+  const suggestion = suggestions[0]; // Show first suggestion
+  const textElement = whisperWidget.querySelector('.catalyst-whisper-text');
+  textElement.textContent = suggestion.text || suggestion.message || 'Consider improving your communication approach.';
 
-    const suggestion = suggestions[0]; // Show first suggestion
-    const textElement = whisperWidget.querySelector('.catalyst-whisper-text');
-    textElement.textContent = suggestion.text || suggestion.message || 'Consider improving your communication approach.';
+  whisperWidget.classList.add('show');
 
-    whisperWidget.classList.add('show');
-
-    // Auto-hide after 10 seconds
-    setTimeout(() => {
-      hideWhisperWidget();
-    }, 10000);
-  }
-
-  // Hide whisper widget
-  function hideWhisperWidget() {
-    if (whisperWidget) {
-      whisperWidget.classList.remove('show');
-    }
-  }
-
-  // Apply whisper suggestion
-  function applyWhisperSuggestion() {
-    const inputField = document.querySelector(selectors.inputField);
-    const suggestion = whisperWidget.querySelector('.catalyst-whisper-text').textContent;
-
-    if (inputField && suggestion) {
-      // Focus input field
-      inputField.focus();
-
-      // Insert suggestion text
-      if (inputField.contentEditable === 'true') {
-        inputField.textContent = suggestion;
-      } else {
-        inputField.value = suggestion;
-      }
-
-      // Trigger input event
-      inputField.dispatchEvent(new Event('input', { bubbles: true }));
-
-      // Track application
-      sendMessageToBackground('TRACK_EVENT', {
-        type: 'whisper_applied',
-        platform: currentPlatform
-      });
-    }
-
+  // Auto-hide after 10 seconds
+  setTimeout(() => {
     hideWhisperWidget();
+  }, 10000);
+}
+
+// Hide whisper widget
+function hideWhisperWidget() {
+  if (whisperWidget) {
+    whisperWidget.classList.remove('show');
   }
+}
 
-  // Handle messages from background script
-  function handleBackgroundMessage(message, sender, sendResponse) {
-    switch (message.type) {
-      case 'SHOW_WHISPER':
-        showWhisperSuggestions(message.data.suggestions);
-        sendResponse({ success: true });
-        break;
+// Apply whisper suggestion
+function applyWhisperSuggestion() {
+  const inputField = document.querySelector(selectors.inputField);
+  const suggestion = whisperWidget.querySelector('.catalyst-whisper-text').textContent;
 
-      case 'SETTINGS_UPDATED':
-        isEnabled = message.data.enabled;
-        if (!isEnabled && messageObserver) {
-          messageObserver.disconnect();
-          hideWhisperWidget();
-        } else if (isEnabled && !messageObserver) {
-          startMessageMonitoring();
-        }
-        sendResponse({ success: true });
-        break;
+  if (inputField && suggestion) {
+    // Focus input field
+    inputField.focus();
 
-      default:
-        sendResponse({ error: 'Unknown message type' });
+    // Insert suggestion text
+    if (inputField.contentEditable === 'true') {
+      inputField.textContent = suggestion;
+    } else {
+      inputField.value = suggestion;
     }
-  }
 
-  // Send message to background script
-  function sendMessageToBackground(type, data = null) {
-    return new Promise((resolve) => {
-      chrome.runtime.sendMessage({ type, data }, (response) => {
-        if (chrome.runtime.lastError) {
-          resolve({ error: chrome.runtime.lastError.message });
-        } else {
-          resolve(response || {});
-        }
-      });
+    // Trigger input event
+    inputField.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // Track application
+    sendMessageToBackground('TRACK_EVENT', {
+      type: 'whisper_applied',
+      platform: currentPlatform
     });
   }
 
-  // Utility functions
-  function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
+  hideWhisperWidget();
+}
+
+// Handle messages from background script
+function handleBackgroundMessage(message, sender, sendResponse) {
+  switch (message.type) {
+    case 'SHOW_WHISPER':
+      showWhisperSuggestions(message.data.suggestions);
+      sendResponse({ success: true });
+      break;
+
+    case 'SETTINGS_UPDATED':
+      isEnabled = message.data.enabled;
+      if (!isEnabled && messageObserver) {
+        messageObserver.disconnect();
+        hideWhisperWidget();
+      } else if (isEnabled && !messageObserver) {
+        startMessageMonitoring();
+      }
+      sendResponse({ success: true });
+      break;
+
+    default:
+      sendResponse({ error: 'Unknown message type' });
   }
+}
 
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', () => {
-    if (messageObserver) {
-      messageObserver.disconnect();
-    }
-
-    if (whisperWidget) {
-      whisperWidget.remove();
-    }
+// Send message to background script
+function sendMessageToBackground(type, data = null) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({ type, data }, (response) => {
+      if (chrome.runtime.lastError) {
+        resolve({ error: chrome.runtime.lastError.message });
+      } else {
+        resolve(response || {});
+      }
+    });
   });
+}
 
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
-  } else {
-    initialize();
+// Utility functions
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  if (messageObserver) {
+    messageObserver.disconnect();
   }
+
+  if (whisperWidget) {
+    whisperWidget.remove();
+  }
+});
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize);
+} else {
+  initialize();
+}
+
+// Fetch backend URL from extension storage
+chrome.storage.sync.get(['apiBaseUrl', 'activeProject', 'isEnabled'], function (result) {
+  if (result.apiBaseUrl) {
+    apiBaseUrl = result.apiBaseUrl;
+    console.log('API base URL loaded:', apiBaseUrl);
+  } else {
+    apiBaseUrl = 'http://localhost:8000/api'; // Default fallback
+    console.log('Using default API URL');
+  }
+
+  if (result.activeProject) {
+    activeProject = result.activeProject;
+    console.log('Active project loaded:', activeProject.name);
+  }
+
+  if (result.isEnabled !== undefined) {
+    isEnabled = result.isEnabled;
+    console.log('Extension ' + (isEnabled ? 'enabled' : 'disabled'));
+  }
+
+  // Initialize after loading settings
+  initializeExtension();
+
+  // Debug helpers for Catalyst Whisper Coach testing
+  window.catalystDebug = {
+    // Test DOM selectors
+    testSelectors: () => {
+      const results = {};
+      const hostname = window.location.hostname;
+      let platformKey = null;
+
+      // Find matching platform key
+      for (const key in PLATFORM_SELECTORS) {
+        if (hostname.includes(key) || key.includes(hostname)) {
+          platformKey = key;
+          break;
+        }
+      }
+
+      if (!platformKey) {
+        return { error: 'No selectors found for this platform' };
+      }
+
+      const selectors = PLATFORM_SELECTORS[platformKey];
+
+      for (const [key, selector] of Object.entries(selectors)) {
+        try {
+          const elements = document.querySelectorAll(selector);
+          results[key] = {
+            selector,
+            count: elements.length,
+            valid: elements.length > 0
+          };
+        } catch (error) {
+          results[key] = {
+            selector,
+            error: error.message,
+            valid: false
+          };
+        }
+      }
+
+      return {
+        platform: platformKey,
+        results
+      };
+    },
+
+    // Force suggestion for testing
+    forceSuggestion: async (text) => {
+      if (!text) {
+        text = "I'm feeling upset about how you ignored me yesterday";
+      }
+
+      const messageData = {
+        sender: "TestUser",
+        text: text,
+        timestamp: new Date().toISOString(),
+        platform: window.location.hostname
+      };
+
+      try {
+        // Use the existing processChatMessage function if available
+        if (typeof processChatMessage === 'function') {
+          return processChatMessage(messageData);
+        } else {
+          // Fall back to sending a message to background script
+          return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({
+              type: 'ANALYZE_MESSAGE',
+              message: messageData
+            }, response => {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else {
+                resolve(response);
+              }
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error forcing suggestion:", error);
+        return { error: error.message };
+      }
+    },
+
+    // Log detected messages
+    logMessages: (count = 5) => {
+      const hostname = window.location.hostname;
+      let platformKey = null;
+
+      // Find matching platform key
+      for (const key in PLATFORM_SELECTORS) {
+        if (hostname.includes(key) || key.includes(hostname)) {
+          platformKey = key;
+          break;
+        }
+      }
+
+      if (!platformKey) {
+        return { error: 'No selectors found for this platform' };
+      }
+
+      const selectors = PLATFORM_SELECTORS[platformKey];
+
+      if (!selectors || !selectors.messages) {
+        return { error: 'No message selector for this platform' };
+      }
+
+      try {
+        const messages = [];
+        const messageElements = document.querySelectorAll(selectors.messages);
+
+        const maxCount = Math.min(count, messageElements.length);
+        for (let i = messageElements.length - maxCount; i < messageElements.length; i++) {
+          if (i < 0) continue;
+
+          const el = messageElements[i];
+          const textEl = el.querySelector(selectors.messageText);
+          const senderEl = el.querySelector(selectors.sender);
+          const timestampEl = el.querySelector(selectors.timestamp);
+
+          messages.push({
+            text: textEl ? textEl.textContent : 'No text found',
+            sender: senderEl ? senderEl.textContent : 'Unknown sender',
+            timestamp: timestampEl ? timestampEl.textContent : 'No timestamp',
+            element: el
+          });
+        }
+
+        return messages;
+      } catch (error) {
+        console.error("Error logging messages:", error);
+        return { error: error.message };
+      }
+    },
+
+    // Get extension status
+    getStatus: () => {
+      return {
+        isEnabled,
+        activeProject,
+        platform: window.location.hostname,
+        initialized: !!messageObserver
+      };
+    }
+  };
+
+  // Log that debug helpers are available
+  console.log('Catalyst Whisper Coach debug helpers available via window.catalystDebug');
 
 })();

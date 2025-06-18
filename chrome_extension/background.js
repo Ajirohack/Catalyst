@@ -1,48 +1,40 @@
 // Catalyst Chrome Extension - Background Script
 // Handles extension lifecycle, API communication, and data synchronization
 
-const CATALYST_API_BASE = 'http://localhost:8000';
-const STORAGE_KEYS = {
-  USER_SETTINGS: 'catalyst_user_settings',
-  ACTIVE_PROJECT: 'catalyst_active_project',
-  SESSION_DATA: 'catalyst_session_data',
-  API_TOKEN: 'catalyst_api_token',
-  WHISPER_HISTORY: 'catalyst_whisper_history'
-};
+import { getExtensionConfig, STORAGE_KEYS, DEFAULT_SETTINGS } from './config/api.config.js';
+import { api } from './lib/api.js';
 
-// Default settings
-const DEFAULT_SETTINGS = {
-  enabled: true,
-  autoAnalysis: true,
-  realTimeCoaching: true,
-  privacyMode: false,
-  analysisFrequency: 'medium', // low, medium, high
-  supportedPlatforms: {
-    whatsapp: true,
-    messenger: true,
-    instagram: true,
-    facebook: true,
-    discord: true,
-    slack: true,
-    teams: true,
-    telegram: true
-  },
-  notifications: {
-    insights: true,
-    goals: true,
-    milestones: true
-  },
-  whisperSettings: {
-    autoDisplay: true,
-    displayDuration: 10, // seconds
-    displayMode: 'widget', // widget, popup, inline
-    whisperFrequency: 'medium' // low, medium, high
+// Global configuration - will be loaded asynchronously
+let EXTENSION_CONFIG = null;
+
+// Initialize configuration
+async function initializeConfig() {
+  try {
+    EXTENSION_CONFIG = await getExtensionConfig();
+    console.log('✅ Extension config loaded:', EXTENSION_CONFIG.environment);
+  } catch (error) {
+    console.error('❌ Failed to load extension config:', error);
+    // Fallback to default development config
+    EXTENSION_CONFIG = {
+      apiBaseUrl: 'http://localhost:8000/api',
+      webAppUrl: 'http://localhost:3000',
+      environment: 'development',
+      debug: true
+    };
   }
+}
+
+// Get API base URL (with fallback)
+const getApiBaseUrl = () => {
+  return EXTENSION_CONFIG?.apiBaseUrl || 'http://localhost:8000/api';
 };
 
 // Extension installation and updates
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('Catalyst extension installed/updated:', details.reason);
+
+  // Initialize config first
+  await initializeConfig();
 
   if (details.reason === 'install') {
     // First time installation
@@ -53,27 +45,61 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       url: chrome.runtime.getURL('welcome.html')
     });
   } else if (details.reason === 'update') {
-    // Extension updated
-    await migrateSettings(details.previousVersion);
+    // Extension updated, refresh settings
+    await refreshSettings();
   }
+
+  // Setup context menu
+  setupContextMenu();
 });
 
 // Initialize extension with default settings
 async function initializeExtension() {
   try {
+    // Get current config
+    const config = await getExtensionConfig();
+
+    // Save default settings
     await chrome.storage.sync.set({
       [STORAGE_KEYS.USER_SETTINGS]: DEFAULT_SETTINGS,
-      [STORAGE_KEYS.SESSION_DATA]: {
-        sessionId: generateSessionId(),
-        startTime: Date.now(),
-        messageCount: 0,
-        analysisCount: 0
-      }
+      apiBaseUrl: config.apiBaseUrl
     });
 
-    console.log('Catalyst extension initialized successfully');
+    console.log('Extension initialized with default settings');
+
+    // Check if we have a saved token
+    const token = await getSavedToken();
+    if (token) {
+      // Attempt to fetch user data and projects if already logged in
+      await fetchUserData(token);
+      await fetchProjects(token);
+    }
   } catch (error) {
     console.error('Failed to initialize extension:', error);
+  }
+}
+
+// Fetch user projects from the API
+async function fetchProjects(token) {
+  try {
+    if (!token) {
+      console.log('No authentication token, skipping project fetch');
+      return;
+    }
+
+    // Use the new API client
+    const projectsData = await api.projects.list();
+
+    // Save projects to storage
+    await chrome.storage.sync.set({
+      [STORAGE_KEYS.PROJECT_LIST]: projectsData
+    });
+
+    console.log(`Fetched ${projectsData.length} projects`);
+    return projectsData;
+  } catch (error) {
+    console.error('Failed to fetch projects:', error);
+    return [];
   }
 }
 
@@ -234,21 +260,8 @@ async function loginUser(credentials) {
   try {
     const { email, password } = credentials;
 
-    // Call API for authentication
-    const response = await fetch(`${CATALYST_API_BASE}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Authentication failed');
-    }
-
-    const data = await response.json();
+    // Use the new API client for authentication
+    const data = await api.auth.login({ email, password });
 
     // Store token and user info
     await chrome.storage.sync.set({
@@ -345,22 +358,8 @@ async function analyzeWhisper(whisperData) {
       return { success: false, message: 'Not authenticated' };
     }
 
-    // Call whisper-stream API endpoint
-    const response = await fetch(`${CATALYST_API_BASE}/analysis/whisper-stream`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(whisperData)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Whisper analysis failed');
-    }
-
-    const data = await response.json();
+    // Use the new API client for whisper analysis
+    const data = await api.analysis.whisper(whisperData);
 
     // Store in whisper history
     await storeWhisperAnalysis({
@@ -540,7 +539,7 @@ async function connectWhisperWebSocket() {
     const sessionId = generateSessionId();
 
     // Connect to WebSocket
-    const wsUrl = `${CATALYST_API_BASE.replace('http', 'ws')}/analysis/whisper-ws/${sessionId}`;
+    const wsUrl = `${EXTENSION_CONFIG?.wsBaseUrl || getApiBaseUrl().replace('http', 'ws')}/analysis/whisper-ws/${sessionId}`;
     whisperSocket = new WebSocket(wsUrl);
 
     whisperSocket.onopen = () => {

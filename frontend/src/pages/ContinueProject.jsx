@@ -51,7 +51,7 @@ import {
   // TrendingUp as TrendingUpIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import { projectService } from "../lib/services/projectService";
 import { useNavigate } from "react-router-dom";
 
 // Removed unused import:
@@ -102,16 +102,17 @@ const ContinueProject = () => {
   const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8000/api/projects/", {
-        params: {
-          page,
-          limit: itemsPerPage,
-          sort_by: sortBy,
-          order: "desc",
-        },
-      });
-      setProjects(response.data.projects || []);
-      setTotalPages(Math.ceil((response.data.total || 0) / itemsPerPage));
+
+      const params = {
+        page,
+        limit: itemsPerPage,
+        sortBy,
+        order: "desc",
+      };
+
+      const response = await projectService.getProjects(params);
+      setProjects(response.projects || response.data || []);
+      setTotalPages(Math.ceil((response.total || 0) / itemsPerPage));
     } catch (err) {
       setError("Failed to load projects. Please try again.");
       console.error("Error fetching projects:", err);
@@ -122,10 +123,8 @@ const ContinueProject = () => {
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8000/api/projects/stats"
-      );
-      setStats(response.data);
+      const response = await projectService.getProjectStats();
+      setStats(response);
     } catch (err) {
       console.error("Error fetching stats:", err);
     }
@@ -170,8 +169,7 @@ const ContinueProject = () => {
 
   const handleProjectAction = async (projectId, action) => {
     try {
-      let endpoint = "";
-      let data = {};
+      let updateData = {};
 
       switch (action) {
         case "continue":
@@ -179,30 +177,31 @@ const ContinueProject = () => {
           navigate(`/project/${projectId}`);
           return;
         case "pause":
-          endpoint = `/api/projects/${projectId}/status`;
-          data = { status: "paused" };
+          updateData = { status: "paused" };
           break;
         case "resume":
-          endpoint = `/api/projects/${projectId}/status`;
-          data = { status: "active" };
+          updateData = { status: "active" };
           break;
         case "complete":
-          endpoint = `/api/projects/${projectId}/status`;
-          data = { status: "completed" };
+          updateData = { status: "completed" };
           break;
         case "archive":
-          endpoint = `/api/projects/${projectId}/status`;
-          data = { status: "archived" };
-          break;
+          await projectService.archiveProject(projectId);
+          fetchProjects();
+          fetchStats();
+          setMenuAnchor(null);
+          return;
         case "unarchive":
-          endpoint = `/api/projects/${projectId}/status`;
-          data = { status: "active" };
-          break;
+          await projectService.restoreProject(projectId);
+          fetchProjects();
+          fetchStats();
+          setMenuAnchor(null);
+          return;
         default:
           return;
       }
 
-      await axios.patch(`http://localhost:8000${endpoint}`, data);
+      await projectService.updateProject(projectId, updateData);
       fetchProjects();
       fetchStats();
       setMenuAnchor(null);
@@ -215,9 +214,7 @@ const ContinueProject = () => {
     if (!selectedProject) return;
 
     try {
-      await axios.delete(
-        `http://localhost:8000/api/projects/${selectedProject.id}`
-      );
+      await projectService.deleteProject(selectedProject.id);
       fetchProjects();
       fetchStats();
       setDeleteDialogOpen(false);

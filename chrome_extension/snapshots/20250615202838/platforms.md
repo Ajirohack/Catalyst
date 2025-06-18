@@ -1,0 +1,21 @@
+# Supported Platforms
+
+- chat.openai.com
+- discord.com
+- instagram.com
+- mail.google.com
+- meet.google.com
+- meet.google.com
+- outlook.live.com
+- reddit.com
+- slack.com
+- teams.microsoft.com
+- telegram.org
+- twitter.com
+- web.skype.com
+- web.whatsapp.com
+- www.facebook.com
+- www.linkedin.com
+- www.messenger.com
+- zoom.us
+- zoom.us

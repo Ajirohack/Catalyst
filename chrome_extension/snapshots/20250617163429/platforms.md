@@ -1,0 +1,33 @@
+# Supported Platforms
+
+1. *.facebook.com
+1. *.instagram.com
+1. *.linkedin.com
+1. app.slack.com
+1. app.zoom.us
+1. bumble.com
+1. chat.openai.com
+1. discord.com
+1. hinge.co
+1. mail.google.com
+1. match.com
+1. meet.google.com
+1. okcupid.com
+1. outlook.live.com
+1. outlook.office.com
+1. reddit.com
+1. slack.com
+1. teams.microsoft.com
+1. telegram.org
+1. tinder.com
+1. twitter.com
+1. web.skype.com
+1. web.telegram.org
+1. web.whatsapp.com
+1. www.facebook.com
+1. www.linkedin.com
+1. www.messenger.com
+1. www.reddit.com
+1. www.viber.com
+1. x.com
+1. zoom.us

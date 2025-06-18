@@ -20,14 +20,26 @@ This document provides guidance for testing the Catalyst Whisper Coach extension
    - Click "Load unpacked" and select the `chrome_extension` directory
    - Pin the extension to your toolbar
 
-## Test Matrix
+## Supported Platforms
 
-### 1. Authentication Tests
+The Catalyst Chrome Extension now supports the following messaging platforms:
 
-| Test Case | Steps | Expected Result |
-|-----------|-------|-----------------|
-| First Launch | Install extension, click icon | Login page appears |
-| Valid Login | Enter valid credentials, click Sign In | Redirects to popup, shows suggestions |
+1. WhatsApp Web - `web.whatsapp.com`
+2. Facebook Messenger - `www.messenger.com`
+3. Instagram DMs - `www.instagram.com/direct/inbox`
+4. Discord - `discord.com/channels/@me`
+5. Slack - `slack.com`
+6. Microsoft Teams - `teams.microsoft.com`
+7. Telegram Web - `web.telegram.org`
+8. Google Meet - `meet.google.com`
+9. Zoom - `zoom.us`
+10. ChatGPT - `chat.openai.com`
+11. Gmail - `mail.google.com`
+12. LinkedIn Messaging - `www.linkedin.com/messaging`
+13. Twitter/X DMs - `twitter.com`
+14. Outlook - `outlook.live.com`
+15. Reddit Chat - `www.reddit.com`
+16. Skype Web - `web.skype.com`
 | Invalid Login | Enter invalid credentials, click Sign In | Shows error message |
 | Remember Login | Login, close popup, reopen extension icon | Stays logged in, shows popup |
 | Logout | Click logout button | Redirects to login page |

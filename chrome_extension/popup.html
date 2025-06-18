@@ -346,6 +346,76 @@
       .clear-history-btn:hover {
         background: #e0e0e0;
       }
+
+      .projects-list {
+        margin-top: 15px;
+      }
+
+      .project-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .project-card h4 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+      }
+
+      .project-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 12px;
+      }
+
+      .project-role {
+        background: #f0f0f0;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .project-actions {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .project-select-container {
+        margin-bottom: 15px;
+      }
+
+      .project-select {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        background: white;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+      }
+
+      .error-state {
+        text-align: center;
+        padding: 20px;
+        color: #e53935;
+      }
     </style>
   </head>
   <body>
@@ -360,6 +430,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="suggestions">Suggestions</div>
       <div class="tab" data-tab="history">History</div>
+      <div class="tab" data-tab="projects">Projects</div>
       <div class="tab" data-tab="settings">Settings</div>
     </div>
 
@@ -419,6 +490,19 @@
             <div class="loading">
               <div class="loading-spinner"></div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="projects-tab">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <h3 class="section-title">Active Project</h3>
+          </div>
+          <div id="projects-list" class="projects-list">
+            <div class="loading">Loading projects...</div>
           </div>
         </div>
       </div>

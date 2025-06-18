@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadSuggestionHistory();
             } else if (tabId === 'settings') {
                 loadSettings();
+            } else if (tabId === 'projects') {
+                loadProjects();  // New project tab
             }
         });
     });
@@ -44,6 +46,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Save settings button
     document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+
+    // Add project selection functionality
+    const projectSelect = document.getElementById('project-select');
+    if (projectSelect) {
+        projectSelect.addEventListener('change', selectActiveProject);
+    }
+
+    // Load projects on startup
+    loadProjects();
 
     // Logout button
     const logoutBtn = document.createElement('button');
@@ -360,5 +371,208 @@ function getPlatformFromUrl(hostname) {
         return 'telegram';
     } else {
         return 'unknown';
+    }
+}
+
+// New functions for project integration
+async function loadProjects() {
+    const projectsContainer = document.getElementById('projects-list');
+    if (!projectsContainer) return;
+
+    projectsContainer.innerHTML = '<div class="loading">Loading projects...</div>';
+
+    try {
+        // Get projects from storage or fetch from API
+        const result = await chrome.storage.sync.get(['catalyst_project_list', 'catalyst_active_project']);
+        const projects = result.catalyst_project_list || [];
+        const activeProject = result.catalyst_active_project;
+
+        if (projects.length === 0) {
+            projectsContainer.innerHTML = `
+                <div class="empty-state">
+                    <p>No projects found.</p>
+                    <button id="create-project-btn" class="btn primary">Create Project</button>
+                    <button id="refresh-projects-btn" class="btn secondary">Refresh</button>
+                </div>
+            `;
+
+            document.getElementById('create-project-btn').addEventListener('click', () => {
+                // Open create project page in new tab
+                chrome.tabs.create({ url: chrome.runtime.getURL('create-project.html') });
+            });
+
+            document.getElementById('refresh-projects-btn').addEventListener('click', loadProjects);
+            return;
+        }
+
+        // Render projects list
+        projectsContainer.innerHTML = `
+            <div class="projects-header">
+                <h3>Your Projects</h3>
+                <button id="refresh-projects-btn" class="icon-btn" title="Refresh Projects">
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </div>
+            <div class="project-select-container">
+                <select id="project-select" class="project-select">
+                    <option value="">Select a project</option>
+                    ${projects.map(p => `
+                        <option value="${p.id}" ${activeProject && activeProject.id === p.id ? 'selected' : ''}>
+                            ${p.name}
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+            <div id="active-project-details" class="project-details ${!activeProject ? 'hidden' : ''}">
+                ${activeProject ? `
+                    <div class="project-card">
+                        <h4>${activeProject.name}</h4>
+                        <div class="project-meta">
+                            <span class="project-role">${formatRole(activeProject.role)}</span>
+                            <span class="project-date">Created: ${formatDate(activeProject.created_at)}</span>
+                        </div>
+                        <div class="project-actions">
+                            <button id="open-project-btn" class="btn secondary">Open in Dashboard</button>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        // Add event listeners
+        document.getElementById('refresh-projects-btn').addEventListener('click', loadProjects);
+        document.getElementById('project-select').addEventListener('change', selectActiveProject);
+
+        if (activeProject) {
+            document.getElementById('open-project-btn').addEventListener('click', () => {
+                // Get base URL from storage
+                chrome.storage.sync.get(['apiBaseUrl'], (result) => {
+                    const baseUrl = result.apiBaseUrl || 'http://localhost:8000/api';
+                    const frontendUrl = baseUrl.replace('/api', '');
+                    chrome.tabs.create({ url: `${frontendUrl}/projects/${activeProject.id}` });
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Error loading projects:', error);
+        projectsContainer.innerHTML = `
+            <div class="error-state">
+                <p>Failed to load projects. Please try again.</p>
+                <button id="retry-projects-btn" class="btn secondary">Retry</button>
+            </div>
+        `;
+
+        document.getElementById('retry-projects-btn').addEventListener('click', loadProjects);
+    }
+}
+
+async function selectActiveProject(event) {
+    const projectId = event.target.value;
+    if (!projectId) {
+        // Deselect project
+        await chrome.storage.sync.remove(['catalyst_active_project']);
+        document.getElementById('active-project-details').classList.add('hidden');
+        return;
+    }
+
+    try {
+        // Get project details from storage
+        const result = await chrome.storage.sync.get(['catalyst_project_list']);
+        const projects = result.catalyst_project_list || [];
+        const selectedProject = projects.find(p => p.id === projectId);
+
+        if (selectedProject) {
+            // Save as active project
+            await chrome.storage.sync.set({ 'catalyst_active_project': selectedProject });
+
+            // Update UI
+            const detailsContainer = document.getElementById('active-project-details');
+            detailsContainer.classList.remove('hidden');
+            detailsContainer.innerHTML = `
+                <div class="project-card">
+                    <h4>${selectedProject.name}</h4>
+                    <div class="project-meta">
+                        <span class="project-role">${formatRole(selectedProject.role)}</span>
+                        <span class="project-date">Created: ${formatDate(selectedProject.created_at)}</span>
+                    </div>
+                    <div class="project-actions">
+                        <button id="open-project-btn" class="btn secondary">Open in Dashboard</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('open-project-btn').addEventListener('click', () => {
+                // Get base URL from storage
+                chrome.storage.sync.get(['apiBaseUrl'], (result) => {
+                    const baseUrl = result.apiBaseUrl || 'http://localhost:8000/api';
+                    const frontendUrl = baseUrl.replace('/api', '');
+                    chrome.tabs.create({ url: `${frontendUrl}/projects/${selectedProject.id}` });
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Error selecting project:', error);
+        alert('Failed to select project. Please try again.');
+    }
+}
+
+// Helper functions
+function formatRole(role) {
+    switch (role) {
+        case 'coach': return 'Conversation Coach';
+        case 'therapist': return 'Communication Therapist';
+        case 'strategist': return 'Dialogue Strategist';
+        default: return role;
+    }
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString();
+}
+
+// Fix for popup.js - need to close the loadPlatformSpecificFeatures function
+async function loadPlatformSpecificFeatures() {
+    try {
+        // Get current tab URL
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        const url = tabs[0]?.url || '';
+        const hostname = new URL(url).hostname;
+
+        // Platform-specific UI adjustments
+        if (hostname.includes('web.whatsapp.com')) {
+            // WhatsApp specific features
+            document.getElementById('platform-name').textContent = 'WhatsApp Web';
+            document.getElementById('platform-icon').className = 'fab fa-whatsapp';
+
+            // Show WhatsApp specific settings
+            document.querySelectorAll('.whatsapp-feature').forEach(el => {
+                el.style.display = 'block';
+            });
+        } else if (hostname.includes('discord.com')) {
+            // Discord specific features
+            document.getElementById('platform-name').textContent = 'Discord';
+            document.getElementById('platform-icon').className = 'fab fa-discord';
+        } else if (hostname.includes('messenger.com') || hostname.includes('facebook.com')) {
+            // Messenger specific features
+            document.getElementById('platform-name').textContent = 'Messenger';
+            document.getElementById('platform-icon').className = 'fab fa-facebook-messenger';
+        } else if (hostname.includes('teams.microsoft.com')) {
+            // Microsoft Teams specific features
+            document.getElementById('platform-name').textContent = 'Microsoft Teams';
+            document.getElementById('platform-icon').className = 'fab fa-microsoft';
+        } else if (hostname.includes('slack.com')) {
+            // Slack specific features
+            document.getElementById('platform-name').textContent = 'Slack';
+            document.getElementById('platform-icon').className = 'fab fa-slack';
+        } else {
+            // Generic or unsupported platform
+            document.getElementById('platform-name').textContent = 'Current Site';
+            document.getElementById('platform-icon').className = 'fas fa-globe';
+
+            // Show unsupported message
+            document.getElementById('platform-support-message').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading platform features:', error);
     }
 }

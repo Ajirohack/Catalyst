@@ -47,14 +47,17 @@ export default function Models() {
         window.chrome.runtime.sendMessage(
           { type: "CHECK_INSTALLATION" },
           (response) => {
-            if (response && !chrome.runtime.lastError) {
+            if (response && !window.chrome.runtime.lastError) {
               setIsExtensionInstalled(true);
-              // Could also set extension usage stats here
+              // Update usage stats if available
+              if (response.stats) {
+                setExtensionUsageStats(response.stats);
+              }
             }
           }
         );
       } catch (error) {
-        console.log("Extension not detected:", error);
+        console.error("Error checking extension:", error);
       }
     }
   }, []);

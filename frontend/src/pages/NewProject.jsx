@@ -35,8 +35,9 @@ import {
   Group as GroupIcon,
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { projectService } from "../lib/services/projectService";
+import { analysisService } from "../lib/services/analysisService";
 
 const PLATFORMS = [
   { value: "whatsapp", label: "WhatsApp", icon: "💬" },
@@ -238,31 +239,16 @@ const NewProject = () => {
         enable_ai: formData.enableAI,
       };
 
-      const response = await axios.post(
-        "http://localhost:8000/api/projects/",
-        projectData
-      );
-      const projectId = response.data.id;
+      const response = await projectService.createProject(projectData);
+      const projectId = response.id;
 
       // Upload files if any
       if (formData.files.length > 0) {
-        const uploadFormData = new FormData();
-        formData.files.forEach((file) => {
-          uploadFormData.append("files", file);
-        });
-        uploadFormData.append("project_id", projectId);
-
-        await axios.post(
-          "http://localhost:8000/api/analysis/upload",
-          uploadFormData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-            onUploadProgress: (progressEvent) => {
-              const progress = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              setUploadProgress(progress);
-            },
+        await projectService.uploadFiles(
+          projectId,
+          formData.files,
+          (progress) => {
+            setUploadProgress(progress);
           }
         );
       }

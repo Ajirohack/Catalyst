@@ -15,18 +15,36 @@ This test suite provides complete coverage for all backend endpoints and functio
 
 ## Test Structure
 
-```
+```bash
 tests/
 ├── conftest.py              # Test configuration and fixtures
 ├── test_projects.py         # Projects router endpoint tests
 ├── test_analysis.py         # Analysis router endpoint tests
-├── test_main.py            # Main application endpoint tests
-├── test_integration.py     # Integration and workflow tests
-├── requirements.txt        # Test dependencies
-├── run_tests.sh           # Test runner script
-├── reports/               # Generated test reports
-└── README.md             # This file
+├── test_main.py             # Main application endpoint tests
+├── test_integration.py      # Integration and workflow tests
+├── requirements.txt         # Test dependencies
+├── run_tests.sh             # Test runner script
+├── reports/                 # Generated test reports
+└── README.md                # This file
 ```
+
+## Testing Approach
+
+### Unit Tests
+
+Located in various test files, these tests focus on testing individual functions and classes in isolation.
+
+### Integration Tests
+
+In `test_integration.py`, these tests verify that different parts of the backend work together correctly.
+
+### API Tests
+
+Spread across `test_projects.py`, `test_analysis.py`, and `test_main.py`, these tests verify that the API endpoints return the expected responses.
+
+### Performance Tests
+
+The test suite includes performance benchmarks to ensure the API remains responsive under load.
 
 ## Quick Start
 
@@ -157,6 +175,7 @@ Test individual endpoints and functions in isolation:
 ```
 
 **Coverage:**
+
 - Projects CRUD operations
 - Analysis endpoints
 - Health checks
@@ -172,6 +191,7 @@ Test complete workflows across multiple endpoints:
 ```
 
 **Coverage:**
+
 - Project lifecycle (create → analyze → update → delete)
 - Multi-project workflows
 - Data consistency
@@ -187,6 +207,7 @@ Test system performance under load:
 ```
 
 **Coverage:**
+
 - Response time validation
 - Concurrent request handling
 - Memory usage monitoring
@@ -201,6 +222,7 @@ Test real-time communication features:
 ```
 
 **Coverage:**
+
 - Connection establishment
 - Message handling
 - Ping/pong mechanism
@@ -358,24 +380,28 @@ def test_complete_project_lifecycle(self):
 ### Common Issues
 
 1. **Import Errors**
+
    ```bash
    # Ensure PYTHONPATH includes backend directory
    export PYTHONPATH="/path/to/backend:$PYTHONPATH"
    ```
 
 2. **Missing Dependencies**
+
    ```bash
    # Install all dependencies
    ./run_tests.sh --install-deps
    ```
 
 3. **WebSocket Connection Issues**
+
    ```bash
    # Run WebSocket tests separately
    ./run_tests.sh -w -v
    ```
 
 4. **Performance Test Timeouts**
+
    ```bash
    # Skip performance tests during development
    ./run_tests.sh -m "not performance"
@@ -436,6 +462,7 @@ The test suite includes security validation:
 ```
 
 **Security Tests Cover:**
+
 - Input validation and sanitization
 - SQL injection prevention
 - XSS protection

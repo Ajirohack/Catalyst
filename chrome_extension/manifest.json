@@ -3,20 +3,45 @@
   "name": "Catalyst - Whisper Coach",
   "version": "1.0.0",
   "description": "AI-powered relationship coaching that analyzes your conversations and provides real-time insights to improve communication.",
-  "permissions": ["activeTab", "storage", "background", "scripting"],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "background",
+    "scripting",
+    "notifications",
+    "contextMenus"
+  ],
   "host_permissions": [
     "https://web.whatsapp.com/*",
     "https://www.messenger.com/*",
     "https://discord.com/*",
+    "https://app.slack.com/*",
     "https://slack.com/*",
     "https://teams.microsoft.com/*",
+    "https://web.telegram.org/*",
     "https://telegram.org/*",
     "https://*.instagram.com/*",
     "https://*.facebook.com/*",
+    "https://www.facebook.com/*",
+    "https://meet.google.com/*",
+    "https://zoom.us/*",
+    "https://app.zoom.us/*",
+    "https://chat.openai.com/*",
+    "https://mail.google.com/*",
+    "https://outlook.office.com/*",
+    "https://outlook.live.com/*",
+    "https://*.linkedin.com/*",
+    "https://www.linkedin.com/*",
+    "https://twitter.com/*",
+    "https://x.com/*",
+    "https://www.reddit.com/*",
+    "https://reddit.com/*",
+    "https://web.skype.com/*",
     "http://localhost:8000/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -24,13 +49,31 @@
         "https://web.whatsapp.com/*",
         "https://www.messenger.com/*",
         "https://discord.com/*",
-        "https://slack.com/*",
+        "https://app.slack.com/*",
         "https://teams.microsoft.com/*",
+        "https://web.telegram.org/*",
         "https://telegram.org/*",
         "https://*.instagram.com/*",
-        "https://*.facebook.com/*"
+        "https://*.facebook.com/*",
+        "https://meet.google.com/*",
+        "https://zoom.us/*",
+        "https://app.zoom.us/*",
+        "https://chat.openai.com/*",
+        "https://mail.google.com/*",
+        "https://outlook.office.com/*",
+        "https://outlook.live.com/*",
+        "https://*.linkedin.com/*",
+        "https://twitter.com/*",
+        "https://x.com/*",
+        "https://tinder.com/*",
+        "https://bumble.com/*",
+        "https://hinge.co/*",
+        "https://okcupid.com/*",
+        "https://match.com/*",
+        "https://reddit.com/*",
+        "https://www.viber.com/*"
       ],
-      "js": ["content_script.js"],
+      "js": ["platform_selectors.js", "content_script.js"],
       "css": ["content_styles.css"],
       "run_at": "document_end"
     }
@@ -53,10 +96,16 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["catalyst-widget.js", "catalyst-styles.css"],
+      "resources": ["catalyst-widget.js", "catalyst-styles.css", "icons/*"],
       "matches": ["<all_urls>"]
     }
   ],
   "options_page": "options.html",
-  "minimum_chrome_version": "88"
+  "minimum_chrome_version": "88",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "author": "Catalyst Team",
+  "offline_enabled": true,
+  "short_name": "Catalyst"
 }

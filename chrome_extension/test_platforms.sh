@@ -31,13 +31,22 @@ header() {
 
 # Display supported platforms
 platforms=(
-  "WhatsApp Web (https://web.whatsapp.com)"
-  "Facebook Messenger (https://www.messenger.com)"
-  "Instagram DMs (https://www.instagram.com/direct/inbox)"
-  "Discord (https://discord.com/channels/@me)"
-  "Slack (Your workspace URL)"
-  "Microsoft Teams (https://teams.microsoft.com)"
-  "Telegram Web (https://web.telegram.org)"
+  "web.whatsapp.com"
+  "www.messenger.com"
+  "www.instagram.com/direct/inbox"
+  "discord.com/channels/@me"
+  "slack.com"
+  "teams.microsoft.com"
+  "web.telegram.org"
+  "meet.google.com"
+  "zoom.us"
+  "chat.openai.com"
+  "mail.google.com"
+  "www.linkedin.com/messaging"
+  "twitter.com"
+  "outlook.live.com"
+  "reddit.com"
+  "web.skype.com"
 )
 
 # Start testing
