@@ -9,6 +9,12 @@ from datetime import datetime, timezone
 
 # Import routers
 from routers import projects, analysis
+from routers import ai_therapy
+from routers import ai_providers_admin  # Add AI providers admin router
+from routers import advanced_analytics  # Add advanced analytics router
+from routers import knowledge_base  # Add knowledge base router
+from routers import kb_ai_integration  # Add KB-AI integration router
+from api import advanced_features
 from config import setup_logging, get_logger
 from middleware import PerformanceMiddleware, RequestCounterMiddleware
 from docs import enhance_api_docs, API_TAGS
@@ -49,8 +55,10 @@ allowed_origins = [
 
 # Add environment-specific origins
 if os.getenv("ALLOWED_ORIGINS"):
-    env_origins = os.getenv("ALLOWED_ORIGINS").split(",")
-    allowed_origins.extend([origin.strip() for origin in env_origins])
+    env_origins_str = os.getenv("ALLOWED_ORIGINS")
+    if env_origins_str:
+        env_origins = env_origins_str.split(",")
+        allowed_origins.extend([origin.strip() for origin in env_origins])
 
 # Performance monitoring middleware
 app.add_middleware(PerformanceMiddleware, log_slow_requests=True, slow_threshold=1.0)
@@ -108,6 +116,45 @@ app.include_router(
     analysis.router, 
     prefix="/api/analysis", 
     tags=["Analysis"]
+)
+
+app.include_router(
+    ai_therapy.router, 
+    prefix="/api/v1/ai-therapy", 
+    tags=["ai-therapy"]
+)
+
+app.include_router(
+    advanced_features.router,
+    prefix="/api/v1/advanced",
+    tags=["advanced-features"]
+)
+
+# Include AI providers admin router
+app.include_router(
+    ai_providers_admin.router,
+    prefix="/api",
+    tags=["AI Providers Admin"]
+)
+
+# Include advanced analytics router
+app.include_router(
+    advanced_analytics.router,
+    tags=["Advanced Analytics"]
+)
+
+# Include knowledge base router
+app.include_router(
+    knowledge_base.router,
+    prefix="/api/knowledge-base",
+    tags=["Knowledge Base"]
+)
+
+# Include KB-AI integration router
+app.include_router(
+    kb_ai_integration.router,
+    prefix="/api/kb-ai",
+    tags=["Knowledge Base AI Integration"]
 )
 
 # Root endpoint
