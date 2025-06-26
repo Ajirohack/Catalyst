@@ -57,6 +57,22 @@
       "group": "test",
       "isBackground": false,
       "problemMatcher": []
+    },
+    {
+      "label": "Run Backend Comprehensive Tests",
+      "type": "shell",
+      "command": "chmod +x \"${workspaceFolder}/test_all_backend.sh\" && \"${workspaceFolder}/test_all_backend.sh\"",
+      "group": "test",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run Internal Components Tests",
+      "type": "shell",
+      "command": "chmod +x \"${workspaceFolder}/test_internal_components.sh\" && \"${workspaceFolder}/test_internal_components.sh\"",
+      "group": "test",
+      "isBackground": false,
+      "problemMatcher": []
     }
   ],
   "inputs": [

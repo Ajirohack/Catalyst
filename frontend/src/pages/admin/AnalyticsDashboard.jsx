@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { toast } from "../../lib/toast";
 import {
   BarChart,
   Bar,
@@ -111,6 +112,16 @@ const AnalyticsDashboard = () => {
     analysisVolume: generateTimeSeriesData(30, 200, 300, 8),
     revenue: generateTimeSeriesData(30, 4000, 5000, 100),
     conversationVolume: generateTimeSeriesData(30, 400, 500, 15),
+  });
+
+  // Main analytics data state
+  const [analyticsData, setAnalyticsData] = useState({
+    userData: [],
+    platformUsage: [],
+    featureUsage: [],
+    retentionCohorts: [],
+    hourlyActivity: [],
+    messagePlatforms: [],
   });
 
   // Generate mock time series data

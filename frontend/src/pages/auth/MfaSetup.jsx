@@ -22,17 +22,17 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
   Tabs,
   TabsList,
   TabsTrigger,
   TabsContent,
-} from "../components/ui/tabs";
-import securityUtils from "../utils/securityUtils";
+} from "../../components/ui/tabs";
+import securityUtils from "../../utils/securityUtils";
 
 export default function MfaSetup() {
   const navigate = useNavigate();

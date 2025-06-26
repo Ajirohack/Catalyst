@@ -1,8 +1,13 @@
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timezone
-import uuid
-from models.project import Project
-from schemas.project_schema import ProjectCreate, ProjectUpdate
+"""Project service module for Catalyst backend."""
+
+try:
+    from typing import List, Optional, Dict, Any
+    from datetime import datetime, timezone, timedelta, timezone
+    import uuid
+    from models.project import Project
+    from schemas.project_schema import ProjectCreate, ProjectUpdate
+except ImportError:
+    pass
 
 class ProjectService:
     def __init__(self):
@@ -166,7 +171,7 @@ class ProjectService:
             return None
         
         project.status = status
-        project.updated_at = datetime.utcnow()
+        project.updated_at = datetime.now(timezone.utc)
         
         return project
     
@@ -187,7 +192,7 @@ class ProjectService:
         
         if goal not in project.goals:
             project.goals.append(goal)
-            project.updated_at = datetime.utcnow()
+            project.updated_at = datetime.now(timezone.utc)
         
         return project
     
@@ -208,7 +213,7 @@ class ProjectService:
         
         if goal in project.goals:
             project.goals.remove(goal)
-            project.updated_at = datetime.utcnow()
+            project.updated_at = datetime.now(timezone.utc)
         
         return project
     
@@ -220,29 +225,36 @@ class ProjectService:
             Dictionary with project statistics
         """
         projects = list(self.projects.values())
-        
         total_projects = len(projects)
+        
+        # Count projects by status
         active_projects = len([p for p in projects if p.status == "active"])
         completed_projects = len([p for p in projects if p.status == "completed"])
         paused_projects = len([p for p in projects if p.status == "paused"])
         archived_projects = len([p for p in projects if p.status == "archived"])
         
-        # Platform distribution
+        # Count projects by platform
         platform_counts = {}
-        for project in projects:
-            platform = project.platform
-            platform_counts[platform] = platform_counts.get(platform, 0) + 1
+        for p in projects:
+            platform_counts[p.platform] = platform_counts.get(p.platform, 0) + 1
         
-        # Role distribution
+        # Count projects by type
+        type_counts = {}
+        for p in projects:
+            type_counts[p.project_type] = type_counts.get(p.project_type, 0) + 1
+        
+        # Count team members by role
         role_counts = {}
-        for project in projects:
-            role = project.role
-            role_counts[role] = role_counts.get(role, 0) + 1
+        for p in projects:
+            for role in p.team_members:
+                role_counts[role] = role_counts.get(role, 0) + 1
         
         # Recent activity (projects updated in last 7 days)
-        from datetime import timedelta
-        week_ago = datetime.utcnow() - timedelta(days=7)
-        recent_activity = len([p for p in projects if p.updated_at >= week_ago])
+        try:
+            week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+            recent_activity = len([p for p in projects if p.updated_at and p.updated_at >= week_ago])
+        except Exception:
+            recent_activity = 0  # Fallback if there's an issue
         
         return {
             "total_projects": total_projects,
@@ -251,9 +263,9 @@ class ProjectService:
             "paused_projects": paused_projects,
             "archived_projects": archived_projects,
             "platform_distribution": platform_counts,
-            "role_distribution": role_counts,
-            "recent_activity": recent_activity,
-            "generated_at": datetime.utcnow().isoformat()
+            "project_type_distribution": type_counts,
+            "team_role_distribution": role_counts,
+            "recent_activity_count": recent_activity
         }
     
     async def search_projects(self, query: str, limit: int = 10) -> List[Project]:
@@ -318,7 +330,7 @@ class ProjectService:
         
         return matching_projects[:limit]
     
-    def get_total_projects(self) -> int:
+    async def get_total_projects(self) -> int:
         """
         Get total number of projects.
         

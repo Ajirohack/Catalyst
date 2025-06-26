@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -8,18 +8,20 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 # Import routers
-from routers import projects, analysis
-from routers import ai_therapy
-from routers import ai_providers_admin  # Add AI providers admin router
-from routers import advanced_analytics  # Add advanced analytics router
-from routers import knowledge_base  # Add knowledge base router
-from routers import kb_ai_integration  # Add KB-AI integration router
+from routers import (
+    analysis, projects, ai_therapy, ai_providers_admin,
+    # ai_providers_enhanced_admin,  # Temporarily disabled
+    advanced_analytics, knowledge_base, collaboration,
+    therapeutic_interventions
+)
 from api import advanced_features
 from config import setup_logging, get_logger
 from middleware import PerformanceMiddleware, RequestCounterMiddleware
-from docs import enhance_api_docs, API_TAGS
+# from docs import enhance_api_docs, API_TAGS
 
 # Lifespan event handler
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
@@ -31,19 +33,21 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("🛑 Catalyst Backend shutting down...")
 
-# Create FastAPI application
+# Create FastAPI instance
+
+
 app = FastAPI(
     title="Catalyst Backend API",
     description="Backend API for the Catalyst project management and analysis system",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan,
-    openapi_tags=API_TAGS
+    lifespan=lifespan
+    # openapi_tags=API_TAGS
 )
 
 # Enhance API documentation
-enhance_api_docs(app)
+# enhance_api_docs(app)
 
 # CORS middleware configuration
 allowed_origins = [
@@ -61,7 +65,9 @@ if os.getenv("ALLOWED_ORIGINS"):
         allowed_origins.extend([origin.strip() for origin in env_origins])
 
 # Performance monitoring middleware
-app.add_middleware(PerformanceMiddleware, log_slow_requests=True, slow_threshold=1.0)
+app.add_middleware(
+    PerformanceMiddleware, log_slow_requests=True, slow_threshold=1.0
+)
 app.add_middleware(RequestCounterMiddleware)
 
 app.add_middleware(
@@ -69,16 +75,9 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=[
-        "Accept",
-        "Accept-Language",
-        "Content-Language",
-        "Content-Type",
-        "Authorization",
-        "X-Requested-With",
-        "X-API-Key",
-    ],
+    allow_headers=["*"],
 )
+
 
 # Trusted host middleware for security
 app.add_middleware(
@@ -94,6 +93,8 @@ app.add_middleware(
 )
 
 # Global exception handler
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     return JSONResponse(
@@ -137,6 +138,14 @@ app.include_router(
     tags=["AI Providers Admin"]
 )
 
+# Include enhanced AI providers admin router
+# Temporarily disabled due to SQLAlchemy compatibility issues
+# app.include_router(
+#     ai_providers_enhanced_admin.router,
+#     prefix="/api/v1/admin",
+#     tags=["Enhanced AI Providers Admin"]
+# )
+
 # Include advanced analytics router
 app.include_router(
     advanced_analytics.router,
@@ -150,15 +159,24 @@ app.include_router(
     tags=["Knowledge Base"]
 )
 
-# Include KB-AI integration router
+# Include collaboration router
 app.include_router(
-    kb_ai_integration.router,
-    prefix="/api/kb-ai",
-    tags=["Knowledge Base AI Integration"]
+    collaboration.router,
+    prefix="/api/collaboration",
+    tags=["Collaboration"]
+)
+
+# Include therapeutic interventions router
+app.include_router(
+    therapeutic_interventions.router,
+    prefix="/api/interventions",
+    tags=["Therapeutic Interventions"]
 )
 
 # Root endpoint
-@app.get("/", summary="Root Endpoint")
+
+
+@app.get("/")
 async def root():
     """Root endpoint providing basic API information."""
     return {
@@ -174,7 +192,9 @@ async def root():
     }
 
 # Health check endpoint
-@app.get("/health", summary="Health Check")
+
+
+@app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring and load balancers."""
     return {
@@ -198,6 +218,8 @@ async def health_check():
     }
 
 # API status endpoint
+
+
 @app.get("/api/status", summary="API Status")
 async def api_status():
     """Detailed API status information."""
@@ -229,7 +251,7 @@ if __name__ == "__main__":
     port = int(os.getenv("API_PORT", 8000))
     debug = os.getenv("DEBUG", "false").lower() == "true"
     
-    print(f"🌟 Starting Catalyst System Backend")
+    print("🌟 Starting Catalyst System Backend")
     print(f"📍 Host: {host}")
     print(f"🔌 Port: {port}")
     print(f"🐛 Debug: {debug}")

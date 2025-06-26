@@ -8,6 +8,8 @@ import {
   Plug,
   FileText,
   LogOut,
+  Brain,
+  Database,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 
@@ -31,6 +33,11 @@ export default function AdminLayout() {
       icon: <Cpu className="h-5 w-5" />,
     },
     {
+      path: "/admin/ai-providers",
+      label: "AI Providers",
+      icon: <Brain className="h-5 w-5" />,
+    },
+    {
       path: "/admin/integrations",
       label: "Integrations",
       icon: <Plug className="h-5 w-5" />,
@@ -39,6 +46,11 @@ export default function AdminLayout() {
       path: "/admin/logs",
       label: "Logs",
       icon: <FileText className="h-5 w-5" />,
+    },
+    {
+      path: "/admin/knowledge-base",
+      label: "Knowledge Base",
+      icon: <Database className="h-5 w-5" />,
     },
   ];
 

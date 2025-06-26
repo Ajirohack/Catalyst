@@ -1,16 +1,24 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSpecificAnalysis, useAnalysisMetrics } from "@/hooks/useAnalysis";
+import {
+  useSpecificAnalysis,
+  useAnalysisMetrics,
+} from "../../hooks/useAnalysis";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "../../components/ui/tabs";
 import {
   LineChart,
   Line,

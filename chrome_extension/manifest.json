@@ -73,7 +73,7 @@
         "https://reddit.com/*",
         "https://www.viber.com/*"
       ],
-      "js": ["platform_selectors.js", "content_script.js"],
+      "js": ["therapeutic_insights.js", "real_time_analysis.js", "platform_selectors.js", "content_script.js"],
       "css": ["content_styles.css"],
       "run_at": "document_end"
     }

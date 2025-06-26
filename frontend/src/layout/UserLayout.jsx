@@ -18,6 +18,7 @@ import {
   PlayArrow as ContinueIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
+  LibraryBooks as KnowledgeIcon,
 } from "@mui/icons-material";
 
 const drawerWidth = 240;
@@ -26,6 +27,7 @@ const menuItems = [
   { text: "Dashboard", path: "/dashboard", icon: <DashboardIcon /> },
   { text: "New Project", path: "/new-project", icon: <AddIcon /> },
   { text: "Continue", path: "/continue", icon: <ContinueIcon /> },
+  { text: "Knowledge Base", path: "/knowledge-base", icon: <KnowledgeIcon /> },
   { text: "Settings", path: "/settings", icon: <SettingsIcon /> },
 ];
 

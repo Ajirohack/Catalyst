@@ -1,10 +1,15 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAnalysisProgress } from "@/hooks/useAnalysis";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useAnalysisProgress } from "../../hooks/useAnalysis";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
+import { Progress } from "../../components/ui/progress";
+import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 import { toast } from "react-hot-toast";
 
 /**

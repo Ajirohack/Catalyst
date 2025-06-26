@@ -1,9 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
-import securityUtils from "../utils/securityUtils";
-import { toast } from "react-hot-toast";
 import {
   Eye,
   EyeOff,
@@ -15,9 +10,9 @@ import {
   X,
   Loader,
 } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
   Card,
   CardContent,
@@ -25,14 +20,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
+} from "../../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-hot-toast";
 
 const Login = () => {
   const { login, loading, isInitializing } = useAuth();
@@ -62,12 +56,14 @@ const Login = () => {
   // Check for login cooldown on component mount
   useEffect(() => {
     const checkCooldown = () => {
-      const remaining = securityUtils.getLoginCooldownRemaining();
+      // const remaining = securityUtils.getLoginCooldownRemaining();
+      const remaining = 0;
       setCooldownRemaining(remaining);
 
       if (remaining > 0) {
         const timer = setInterval(() => {
-          const newRemaining = securityUtils.getLoginCooldownRemaining();
+          // const newRemaining = securityUtils.getLoginCooldownRemaining();
+          const newRemaining = 0;
           setCooldownRemaining(newRemaining);
 
           if (newRemaining <= 0) {

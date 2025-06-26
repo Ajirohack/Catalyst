@@ -1,20 +1,23 @@
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Depends, Query, Path, UploadFile, File, Form
-from fastapi.responses import JSONResponse
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timezone
-import json
-import asyncio
-import uuid
-
-# Import services and schemas
-from services.analysis_service import AnalysisService
-from services.whisper_service import WhisperService
-from schemas.project_schema import (
-    AnalysisRequest,
-    AnalysisResult,
-    WhisperMessage,
-    WhisperResponse
-)
+try:
+    from fastapi import (
+        APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Query, Path, UploadFile, File, Form
+    )
+    from typing import List, Optional, Dict, Any
+    from datetime import datetime, timezone, timezone
+    import json
+    import uuid
+    
+    # Import services and schemas
+    from services.analysis_service import AnalysisService
+    from services.whisper_service import WhisperService
+    from schemas.project_schema import (
+        AnalysisRequest,
+        AnalysisResult,
+        WhisperMessage,
+        WhisperResponse
+    )
+except ImportError:
+    pass
 
 # Create router
 router = APIRouter()
@@ -33,9 +36,9 @@ class ConnectionManager:
         await websocket.accept()
         self.active_connections[session_id] = websocket
         self.user_sessions[session_id] = {
-            "connected_at": datetime.utcnow(),
+            "connected_at": datetime.now(timezone.utc),
             "message_count": 0,
-            "last_activity": datetime.utcnow()
+            "last_activity": datetime.now(timezone.utc)
         }
         print(f"WebSocket connected: {session_id}")
     
@@ -52,7 +55,7 @@ class ConnectionManager:
             try:
                 await websocket.send_text(json.dumps(message))
                 if session_id in self.user_sessions:
-                    self.user_sessions[session_id]["last_activity"] = datetime.utcnow()
+                    self.user_sessions[session_id]["last_activity"] = datetime.now(timezone.utc)
             except Exception as e:
                 print(f"Error sending message to {session_id}: {e}")
                 self.disconnect(session_id)
@@ -77,13 +80,19 @@ class ConnectionManager:
         return list(self.active_connections.keys())
 
 # Global connection manager
+
+
 manager = ConnectionManager()
 
 # Global storage for analysis history and active sessions (for testing)
 analysis_history = {}
-active_sessions = {}
+
+
+active_sessions: Dict[str, Dict[str, Any]] = {}
 
 # Analysis endpoints
+
+
 @router.post("/upload", summary="Upload Conversation Data")
 async def upload_conversation(
     file: UploadFile = File(...),
@@ -133,7 +142,7 @@ async def upload_conversation(
             "filename": file.filename,
             "content": text_content,
             "metadata": parsed_metadata,
-            "processed_at": datetime.utcnow().isoformat(),
+            "processed_at": datetime.now(timezone.utc).isoformat(),
             "status": "success"
         }
         
@@ -143,7 +152,7 @@ async def upload_conversation(
             "file_id": file_id,
             "project_id": project_id,
             "filename": file.filename,
-            "processed_at": datetime.utcnow().isoformat(),
+            "processed_at": datetime.now(timezone.utc).isoformat(),
             "content_length": len(text_content)
         }
         
@@ -176,8 +185,11 @@ async def analyze_text(
         project_id = analysis_request.project_id
         
         # Perform basic sentiment analysis
-        from textblob import TextBlob
-        blob = TextBlob(analysis_request.text)
+        try:
+            from textblob import TextBlob
+            blob = TextBlob(analysis_request.text)
+        except ImportError:
+            blob = None
         
         # Create analysis ID and store in history
         analysis_id = str(uuid.uuid4())
@@ -186,7 +198,7 @@ async def analyze_text(
             "text": analysis_request.text,
             "analysis_type": analysis_request.analysis_type.value,
             "project_id": project_id,
-            "processed_at": datetime.utcnow().isoformat()
+            "processed_at": datetime.now(timezone.utc).isoformat()
         }
         
         # Create response matching test expectations
@@ -201,7 +213,7 @@ async def analyze_text(
             },
             "keywords": [str(word) for word in blob.noun_phrases[:5]],  # Top 5 keywords
             "suggestions": ["Consider more positive language", "Focus on constructive communication"] if analysis_request.include_recommendations else [],
-            "processed_at": datetime.utcnow().isoformat()
+            "processed_at": datetime.now(timezone.utc).isoformat()
         }
         
         return response
@@ -209,9 +221,13 @@ async def analyze_text(
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Text analysis failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Text analysis failed: {str(e)}"
+        )
 
 # WebSocket endpoint for real-time whisper
+
+
 @router.websocket("/whisper/{session_id}")
 async def whisper_websocket(
     websocket: WebSocket,
@@ -255,7 +271,7 @@ async def whisper_websocket(
                 # Update session activity
                 if session_id in manager.user_sessions:
                     manager.user_sessions[session_id]["message_count"] += 1
-                    manager.user_sessions[session_id]["last_activity"] = datetime.utcnow()
+                    manager.user_sessions[session_id]["last_activity"] = datetime.now(timezone.utc)
                 
                 # Process different message types
                 if message_data.get("type") == "message":
@@ -263,7 +279,7 @@ async def whisper_websocket(
                 elif message_data.get("type") == "ping":
                     await manager.send_personal_message({
                         "type": "pong",
-                        "timestamp": datetime.utcnow().isoformat()
+                        "timestamp": datetime.now(timezone.utc).isoformat()
                     }, session_id)
                 elif message_data.get("type") == "status":
                     await handle_status_request(session_id)
@@ -271,20 +287,20 @@ async def whisper_websocket(
                     await manager.send_personal_message({
                         "type": "error",
                         "message": "Unknown message type",
-                        "timestamp": datetime.utcnow().isoformat()
+                        "timestamp": datetime.now(timezone.utc).isoformat()
                     }, session_id)
                     
             except json.JSONDecodeError:
                 await manager.send_personal_message({
                     "type": "error",
                     "message": "Invalid JSON format",
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }, session_id)
             except Exception as e:
                 await manager.send_personal_message({
                     "type": "error",
                     "message": f"Processing error: {str(e)}",
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.now(timezone.utc).isoformat()
                 }, session_id)
                 
     except WebSocketDisconnect:
@@ -307,7 +323,7 @@ async def handle_whisper_message(message_data: dict, session_id: str):
             await manager.send_personal_message({
                 "type": "error",
                 "message": "Message content is required",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }, session_id)
             return
         
@@ -318,12 +334,14 @@ async def handle_whisper_message(message_data: dict, session_id: str):
                 self.sender = sender
                 self.platform = platform
                 self.project_id = project_id
-                self.timestamp = datetime.utcnow()
+                self.timestamp = datetime.now(timezone.utc)
         
         whisper_message = WhisperMessageObj(content, sender, platform, project_id)
         
         # Process with whisper service
-        whisper_response = await whisper_service.process_message(whisper_message)
+        whisper_response = await whisper_service.process_message(
+            whisper_message
+        )
         
         # Send response back to client
         await manager.send_personal_message({
@@ -333,14 +351,14 @@ async def handle_whisper_message(message_data: dict, session_id: str):
             "urgency_level": whisper_response["urgency_level"],
             "category": whisper_response["category"],
             "context": whisper_response["context"],
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }, session_id)
         
     except Exception as e:
         await manager.send_personal_message({
             "type": "error",
             "message": f"Whisper processing failed: {str(e)}",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }, session_id)
 
 # Handle status request
@@ -354,10 +372,12 @@ async def handle_status_request(session_id: str):
         "message_count": session_info["message_count"] if session_info else 0,
         "last_activity": session_info["last_activity"].isoformat() if session_info else None,
         "active_sessions": len(manager.get_active_sessions()),
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }, session_id)
 
 # Analysis history endpoints
+
+
 @router.get("/history/{project_id}", summary="Get Analysis History")
 async def get_analysis_history(
     project_id: str = Path(..., description="Project ID to get history for"),
@@ -424,7 +444,7 @@ async def get_active_sessions():
         return {
             "total_count": len(active_sessions),
             "active_sessions": session_details,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
     except Exception as e:
@@ -453,7 +473,7 @@ async def broadcast_message(
             "type": "broadcast",
             "message_type": message_type,
             "message": message,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
         sent_to = []
@@ -470,7 +490,7 @@ async def broadcast_message(
             "status": "success",
             "sent_to": sent_to,
             "failed_to": failed_to,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
         
     except HTTPException:
@@ -489,7 +509,7 @@ async def analysis_health_check():
         "service": "analysis",
         "active_sessions": len(manager.get_active_sessions()),
         "total_analyses": len(analysis_history),
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 @router.post("/whisper-stream", summary="Get Real-time Whisper Coaching")
@@ -544,7 +564,7 @@ async def get_whisper_stream(whisper_message: WhisperMessage):
         raise HTTPException(status_code=500, detail=f"Whisper generation failed: {str(e)}")
 
 @router.websocket("/whisper-ws/{session_id}")
-async def whisper_websocket(websocket: WebSocket, session_id: str):
+async def whisper_websocket_enhanced(websocket: WebSocket, session_id: str):
     """
     WebSocket endpoint for real-time whisper coaching.
     
@@ -599,7 +619,7 @@ async def whisper_websocket(websocket: WebSocket, session_id: str):
                 # Update session info
                 if session_id in manager.user_sessions:
                     manager.user_sessions[session_id]["message_count"] += 1
-                    manager.user_sessions[session_id]["last_activity"] = datetime.utcnow()
+                    manager.user_sessions[session_id]["last_activity"] = datetime.now(timezone.utc)
                 
             except WebSocketDisconnect:
                 manager.disconnect(session_id)

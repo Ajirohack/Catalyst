@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -21,14 +21,26 @@ import {
   FolderOpen,
   BarChart3,
   CheckCircle,
+  Activity,
+  AlertTriangle,
+  Shield,
+  Zap,
+  Eye,
+  Settings,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Progress } from "../components/ui/progress";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import RealTimeAnalysisDashboard from "../components/analysis/RealTimeAnalysisDashboard";
+import ConflictDetectionPanel from "../components/analysis/ConflictDetectionPanel";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const [activeView, setActiveView] = useState('overview');
+  const [realTimeEnabled, setRealTimeEnabled] = useState(true);
+  const [conflictDetectionEnabled, setConflictDetectionEnabled] = useState(true);
 
   // Mock data
   const recentProjects = [
@@ -98,6 +110,35 @@ const Dashboard = () => {
     },
   ];
 
+  // Real-time status data
+  const realTimeStatus = {
+    conflictLevel: 'medium',
+    emotionalState: 'concerned',
+    activeConversations: 2,
+    interventionsToday: 3,
+    lastUpdate: new Date()
+  };
+
+  const handleInterventionTrigger = (intervention) => {
+    console.log('Intervention triggered:', intervention);
+    // Handle intervention logic here
+  };
+
+  const getConflictLevelInfo = (level) => {
+    switch (level) {
+      case 'critical':
+        return { color: 'text-red-600', bg: 'bg-red-100', icon: AlertTriangle };
+      case 'high':
+        return { color: 'text-orange-600', bg: 'bg-orange-100', icon: AlertTriangle };
+      case 'medium':
+        return { color: 'text-yellow-600', bg: 'bg-yellow-100', icon: Zap };
+      default:
+        return { color: 'text-green-600', bg: 'bg-green-100', icon: Shield };
+    }
+  };
+
+  const conflictInfo = getConflictLevelInfo(realTimeStatus.conflictLevel);
+
   const getInsightIcon = (type) => {
     switch (type) {
       case "achievement":
@@ -138,14 +179,90 @@ const Dashboard = () => {
         {/* Welcome Section */}
         <motion.div variants={itemVariants}>
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Welcome back, John! 👋
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Here's what's happening with your relationships today.
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-foreground mb-2">
+                  Welcome back, John! 👋
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  AI-powered relationship insights and real-time conflict detection
+                </p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <div className={`w-3 h-3 rounded-full ${realTimeEnabled ? 'bg-green-500' : 'bg-gray-400'} animate-pulse`} />
+                  <span className="text-sm font-medium">
+                    {realTimeEnabled ? 'Live Analysis' : 'Offline'}
+                  </span>
+                </div>
+                <Button
+                  onClick={() => navigate("/new-project")}
+                  className="flex items-center space-x-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>New Project</span>
+                </Button>
+              </div>
+            </div>
           </div>
         </motion.div>
+
+        {/* Real-time Status Bar */}
+        {realTimeEnabled && (
+          <motion.div variants={itemVariants}>
+            <Card className="border-l-4 border-l-blue-500 mb-8">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-6">
+                    <div className="flex items-center space-x-2">
+                      <conflictInfo.icon className={`w-5 h-5 ${conflictInfo.color}`} />
+                      <div>
+                        <div className="font-medium">Conflict Level: {realTimeStatus.conflictLevel}</div>
+                        <div className="text-sm text-gray-500">Emotional State: {realTimeStatus.emotionalState}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4 text-sm">
+                      <div className="flex items-center space-x-1">
+                        <Activity className="w-4 h-4 text-blue-500" />
+                        <span>{realTimeStatus.activeConversations} active</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Brain className="w-4 h-4 text-purple-500" />
+                        <span>{realTimeStatus.interventionsToday} interventions today</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Last update: {realTimeStatus.lastUpdate.toLocaleTimeString()}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Navigation Tabs */}
+        <Tabs value={activeView} onValueChange={setActiveView} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview" className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4" />
+              <span>Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="realtime" className="flex items-center space-x-2">
+              <Activity className="w-4 h-4" />
+              <span>Real-time Analysis</span>
+            </TabsTrigger>
+            <TabsTrigger value="conflicts" className="flex items-center space-x-2">
+              <AlertTriangle className="w-4 h-4" />
+              <span>Conflict Detection</span>
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="flex items-center space-x-2">
+              <Eye className="w-4 h-4" />
+              <span>Insights</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
 
         {/* Quick Stats */}
         <motion.div variants={itemVariants}>
@@ -189,156 +306,184 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Projects */}
-          <div className="lg:col-span-2">
-            <motion.div variants={itemVariants}>
-              <Card className="mb-6">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle>Your Projects</CardTitle>
-                    <Button onClick={() => navigate("/new-project")} className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      New Project
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-
-                  {recentProjects.map((project, index) => (
-                    <div key={project.id} className={`${index < recentProjects.length - 1 ? 'mb-6 pb-6 border-b' : 'mb-0'}`}>
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-lg font-semibold">{project.name}</h4>
-                        <Badge variant={project.status === "active" ? "default" : "secondary"}>
-                          {project.status}
-                        </Badge>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Recent Projects */}
+              <div className="lg:col-span-2">
+                <motion.div variants={itemVariants}>
+                  <Card className="mb-6">
+                    <CardHeader>
+                      <div className="flex justify-between items-center">
+                        <CardTitle>Your Projects</CardTitle>
+                        <Button onClick={() => navigate("/new-project")} className="flex items-center gap-2">
+                          <Plus className="h-4 w-4" />
+                          New Project
+                        </Button>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        Participants: {project.participants.join(", ")}
-                      </p>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="flex-1">
-                          <Progress value={project.progress} className="h-2" />
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {project.progress}%
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Last activity: {project.lastActivity}
-                      </p>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </motion.div>
+                    </CardHeader>
+                    <CardContent>
 
-            {/* Relationship Health Chart */}
-            <motion.div variants={itemVariants}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Relationship Health Trend</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={relationshipHealthData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis domain={[0, 10]} />
-                        <Tooltip />
-                        <Line
-                          type="monotone"
-                          dataKey="score"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth={3}
-                          dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 6 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            {/* Communication Breakdown */}
-            <motion.div variants={itemVariants}>
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>Communication Quality</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-52">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={communicationBreakdown}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={40}
-                          outerRadius={80}
-                          paddingAngle={5}
-                          dataKey="value"
-                        >
-                          {communicationBreakdown.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    {communicationBreakdown.map((item) => (
-                      <div key={item.name} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span className="text-sm">{item.name}</span>
-                        </div>
-                        <span className="text-sm font-semibold">{item.value}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Recent Insights */}
-            <motion.div variants={itemVariants}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Insights</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentInsights.map((insight) => (
-                      <div key={insight.id} className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-1">
-                          {getInsightIcon(insight.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-semibold mb-1">{insight.title}</h4>
-                          <p className="text-sm text-muted-foreground mb-1">
-                            {insight.description}
+                      {recentProjects.map((project, index) => (
+                        <div key={project.id} className={`${index < recentProjects.length - 1 ? 'mb-6 pb-6 border-b' : 'mb-0'}`}>
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-lg font-semibold">{project.name}</h4>
+                            <Badge variant={project.status === "active" ? "default" : "secondary"}>
+                              {project.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-3">
+                            Participants: {project.participants.join(", ")}
                           </p>
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="flex-1">
+                              <Progress value={project.progress} className="h-2" />
+                            </div>
+                            <span className="text-sm text-muted-foreground">
+                              {project.progress}%
+                            </span>
+                          </div>
                           <p className="text-xs text-muted-foreground">
-                            {insight.time}
+                            Last activity: {project.lastActivity}
                           </p>
                         </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Relationship Health Chart */}
+                <motion.div variants={itemVariants}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Relationship Health Trend</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={relationshipHealthData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" />
+                            <YAxis domain={[0, 10]} />
+                            <Tooltip />
+                            <Line
+                              type="monotone"
+                              dataKey="score"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth={3}
+                              dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 6 }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-        </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+
+              {/* Sidebar */}
+              <div className="lg:col-span-1">
+                {/* Communication Breakdown */}
+                <motion.div variants={itemVariants}>
+                  <Card className="mb-6">
+                    <CardHeader>
+                      <CardTitle>Communication Quality</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-52">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={communicationBreakdown}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={40}
+                              outerRadius={80}
+                              paddingAngle={5}
+                              dataKey="value"
+                            >
+                              {communicationBreakdown.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        {communicationBreakdown.map((item) => (
+                          <div key={item.name} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span className="text-sm">{item.name}</span>
+                            </div>
+                            <span className="text-sm font-semibold">{item.value}%</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+
+                {/* Recent Insights */}
+                <motion.div variants={itemVariants}>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Recent Insights</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {recentInsights.map((insight) => (
+                          <div key={insight.id} className="flex items-start gap-3">
+                            <div className="flex-shrink-0 mt-1">
+                              {getInsightIcon(insight.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-sm font-semibold mb-1">{insight.title}</h4>
+                              <p className="text-sm text-muted-foreground mb-1">
+                                {insight.description}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {insight.time}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="realtime">
+            <RealTimeAnalysisDashboard projectId="current" isRealTime={realTimeEnabled} />
+          </TabsContent>
+
+          <TabsContent value="conflicts">
+            <ConflictDetectionPanel 
+              projectId="current" 
+              onInterventionTrigger={handleInterventionTrigger}
+            />
+          </TabsContent>
+
+          <TabsContent value="insights" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Therapeutic Insights & Recommendations</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Brain className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>Advanced insights panel coming soon...</p>
+                  <p className="text-sm mt-2">This will include detailed therapeutic recommendations, progress tracking, and personalized coaching suggestions.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </motion.div>
   );
