@@ -1,5 +1,6 @@
-import time
+"""Performance monitoring middleware for Catalyst backend."""
 import logging
+import time
 from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -94,7 +95,7 @@ class RequestCounterMiddleware(BaseHTTPMiddleware):
     
     def __init__(self, app: ASGIApp):
         super().__init__(app)
-        self.request_counts = {}
+        self.request_counts: Dict[str, int] = {}
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Extract endpoint info

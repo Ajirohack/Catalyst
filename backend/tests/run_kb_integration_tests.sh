@@ -54,7 +54,7 @@ def kb_service():
 @pytest.fixture
 def ai_service():
     """Mock AI service for testing"""
-    from services.ai_service import AIService
+    from services import AIService
     ai = MagicMock(spec=AIService)
     return ai
 
@@ -103,7 +103,7 @@ sys.path.insert(0, backend_dir)
 
 # Import services directly to avoid circular imports
 from services.knowledge_base import KnowledgeBaseService
-from services.ai_service import AIService, AIProvider
+from services import AIService, AIProvider
 from services.vector_search import VectorSearchService
 
 class TestKnowledgeBaseAIIntegration:

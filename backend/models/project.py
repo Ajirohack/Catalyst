@@ -46,13 +46,12 @@ class Project(BaseModel):
     # Settings
     settings: Dict[str, Any] = Field(default_factory=dict, description="Project-specific settings")
     
-    class Config:
-        """Pydantic configuration"""
-        from_attributes = True
-        json_encoders = {
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {
             datetime: lambda v: v.isoformat()
-        }
-        schema_extra = {
+        },
+        "json_schema_extra": {
             "example": {
                 "id": 1,
                 "name": "Improving Communication with Partner",
@@ -71,6 +70,7 @@ class Project(BaseModel):
                 }
             }
         }
+    }
 
 class ProjectAnalysis(BaseModel):
     """Model for storing project analysis results"""
@@ -95,11 +95,12 @@ class ProjectAnalysis(BaseModel):
     # Raw data
     raw_data: Dict[str, Any] = Field(default_factory=dict, description="Raw analysis data")
     
-    class Config:
-        from_attributes = True
-        json_encoders = {
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {
             datetime: lambda v: v.isoformat()
         }
+    }
 
 class ProjectMilestone(BaseModel):
     """Model for project milestones"""
@@ -121,8 +122,9 @@ class ProjectMilestone(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now, description="Creation timestamp")
     updated_at: datetime = Field(default_factory=datetime.now, description="Last update timestamp")
     
-    class Config:
-        from_attributes = True
-        json_encoders = {
+    model_config = {
+        "from_attributes": True,
+        "json_encoders": {
             datetime: lambda v: v.isoformat()
         }
+    }

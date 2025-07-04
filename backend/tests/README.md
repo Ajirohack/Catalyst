@@ -8,6 +8,105 @@ This test suite provides complete coverage for all backend endpoints and functio
 
 - **Projects Router**: CRUD operations, filtering, pagination, goals management
 - **Analysis Router**: Text analysis, file upload, WebSocket real-time features
+- **Knowledge Base Router**: Document management, vector search, embedding generation
+- **Therapeutic Interventions**: Suggestions, history tracking, effectiveness metrics
+- **File Storage**: File operations, metadata handling, concurrent access
+- **Performance**: Benchmarks for critical operations to prevent regressions
+
+## Test Organization
+
+The tests are organized into several categories to improve maintainability:
+
+- **Unit Tests** (`unit/`): Tests for individual functions and classes in isolation
+- **Integration Tests** (`integration/`): Tests for interactions between components
+- **API Tests** (`api/`): Tests for REST API endpoints using FastAPI TestClient
+- **Property Tests** (`property/`): Property-based tests using Hypothesis
+- **Performance Tests** (`performance/`): Benchmark tests for performance critical operations
+- **Database Tests** (`db/`): Tests specifically for database operations
+
+## Running Tests
+
+### Running All Tests
+
+```bash
+cd backend
+pytest
+```
+
+### Running Specific Test Categories
+
+```bash
+# Run only unit tests
+pytest tests/unit/
+
+# Run only integration tests
+pytest tests/integration/
+
+# Run tests with specific markers
+pytest -m unit
+pytest -m integration
+pytest -m api
+pytest -m property
+pytest -m performance
+```
+
+### Performance Tests
+
+Performance tests are marked as `slow` and are skipped by default in regular test runs. To run them:
+
+```bash
+pytest tests/performance/
+# or
+pytest -m performance
+```
+
+### Code Coverage
+
+To run tests with code coverage report:
+
+```bash
+pytest --cov=. --cov-report=html
+```
+
+The HTML coverage report will be available in the `htmlcov/` directory.
+
+## Test Fixtures
+
+Common test fixtures are defined in `conftest.py`. These include:
+
+- `client`: FastAPI TestClient for API testing
+- `clean_database`: Fixture to reset the database before and after tests
+- `event_loop`: AsyncIO event loop for async tests
+- `performance_timer`: Timer utility for performance testing
+- `mock_*_service`: Mock service implementations for testing
+- Various test data fixtures
+
+## Organizing Tests
+
+You can use the `organize_tests.py` script to categorize test files into appropriate directories:
+
+```bash
+python -m tests.organize_tests
+```
+
+## Adding New Tests
+
+When adding new tests:
+
+1. Use the appropriate directory for the test type
+2. Mark tests with appropriate pytest markers
+3. Follow the naming convention: `test_*.py` for files, `test_*` for functions
+4. Run the test to make sure it passes
+5. Add necessary fixtures to `conftest.py` if needed
+
+## Performance Benchmarks
+
+Performance tests compare operations against defined thresholds in `performance_thresholds` fixture. If an operation exceeds the threshold, the test will fail, alerting you to potential performance regressions.
+
+## Property-Based Testing
+
+Property tests use Hypothesis to generate diverse test inputs and verify that system properties hold true across a range of inputs. This helps catch edge cases and ensures robustness of the system.
+
 - **Main Application**: Health checks, API status, documentation endpoints
 - **Integration Tests**: End-to-end workflows and cross-service functionality
 - **Performance Tests**: Load testing and response time validation

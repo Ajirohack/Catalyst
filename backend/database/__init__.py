@@ -1,19 +1,37 @@
 """Database module for Catalyst backend."""
 
 from .models import (
+    Base,
+    ProviderType,
+    ModelType,
+    ProviderStatus,
     ProjectStatus,
-    AnalysisType,
-    MessagePlatform,
-    DatabaseProject,
-    DatabaseAnalysis,
-    DatabaseMessage
+    ProjectType,
+    UserRole,
+    User,
+    Project,
+    Analysis,
+    AIProvider,
+    AIProviderModel,
+    AIUsageLog,
+    KnowledgeBase,
+    Document
 )
 
 __all__ = [
+    "Base",
+    "ProviderType",
+    "ModelType", 
+    "ProviderStatus",
     "ProjectStatus",
-    "AnalysisType",
-    "MessagePlatform",
-    "DatabaseProject",
-    "DatabaseAnalysis",
-    "DatabaseMessage"
+    "ProjectType",
+    "UserRole",
+    "User",
+    "Project",
+    "Analysis",
+    "AIProvider",
+    "AIProviderModel",
+    "AIUsageLog",
+    "KnowledgeBase",
+    "Document"
 ]

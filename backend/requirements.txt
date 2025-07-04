@@ -2,63 +2,73 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
-
-# Database and ORM (for future use)
-# sqlalchemy==2.0.23
-# alembic==1.13.1
-
-# Pydantic for data validation
-pydantic==2.5.0
+pydantic==2.5.2
 pydantic-settings==2.1.0
 
-# File processing dependencies
+# Database and ORM
+sqlalchemy==2.0.41
+alembic==1.13.1
+aiosqlite==0.19.0
+redis==5.0.1
+psycopg2-binary==2.9.9
+
+# File and document processing
 PyPDF2==3.0.1
-Pillow==10.1.0
+Pillow==10.0.1
 pytesseract==0.3.10
+python-docx==1.1.0
+python-magic==0.4.27
 
 # NLP and text analysis
 textblob==0.17.1
 nltk==3.8.1
+numpy==1.26.2
+pandas==2.1.3
 
-# WebSocket support
-websockets==12.0
-
-# HTTP client for external APIs
+# API and HTTP clients
 httpx==0.25.2
 requests==2.31.0
-
-# Async support
+aiohttp==3.9.1
+websockets==12.0
 aiofiles==23.2.1
 
-# Environment variables
-python-dotenv==1.0.0
-
-# CORS and security
+# Security and authentication
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
 
 # Logging and monitoring
 loguru==0.7.2
+structlog==23.2.0
+prometheus-client==0.19.0
 
-# Testing dependencies (development)
+# Testing dependencies
 pytest==7.4.3
 pytest-asyncio==0.21.1
-httpx==0.25.2
+coverage==7.3.2
+hypothesis==6.92.1
+pytest-benchmark==4.0.0
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-timeout==2.2.0
+psutil==5.9.6  # For memory monitoring in performance tests
+freezegun==1.4.0  # For time-dependent tests
 
-# Enhanced dependencies for code quality improvements
-structlog==23.2.0     # Structured logging
-prometheus-client==0.19.0  # Metrics collection (optional)
-psycopg2-binary==2.9.9  # PostgreSQL driver (future)
-redis==5.0.1          # Caching support (future)
-
-# Code quality (development)
+# Development tools
 black==23.11.0
 flake8==6.1.0
 isort==5.12.0
-
-# Type checking (development)
 mypy==1.7.1
 
 # Documentation
 mkdocs==1.5.3
 mkdocs-material==9.4.8
+
+# AI and Vector DB
+openai==1.3.8
+anthropic==0.8.1
+mistralai==0.4.2
+google-generativeai==0.3.2
+groq==0.4.1
+chromadb==0.4.18
+sentence-transformers==2.2.2

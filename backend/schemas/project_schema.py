@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, validator
+"""Project schema definitions for Catalyst backend."""
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -54,8 +55,9 @@ class ProjectBase(BaseModel):
     description: Optional[str] = Field(None, max_length=500)
     project_type: Optional[str] = Field(None)
     
-    @validator('name')
-    def name_must_not_be_empty(cls, v):
+    @field_validator('name')
+    @classmethod
+    def name_must_not_be_empty(cls, v: str) -> str:
         if not v.strip():
             raise ValueError('Project name cannot be empty')
         return v.strip()
@@ -75,8 +77,9 @@ class ProjectUpdate(BaseModel):
     partner_name: Optional[str] = Field(None, max_length=100)
     status: Optional[ProjectStatus] = None
     
-    @validator('name')
-    def name_must_not_be_empty(cls, v):
+    @field_validator('name')
+    @classmethod
+    def name_must_not_be_empty(cls, v: Optional[str]) -> Optional[str]:
         if v is not None and not v.strip():
             raise ValueError('Project name cannot be empty')
         return v.strip() if v else v
@@ -94,8 +97,9 @@ class Project(ProjectBase):
     milestone_count: int = 0
     last_activity: Optional[datetime] = None
     
-    class Config:
-        from_attributes = True
+    model_config = {
+        "from_attributes": True
+    }
 
 class ProjectStats(BaseModel):
     """Project statistics model"""
