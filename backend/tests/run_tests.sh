@@ -28,6 +28,15 @@ NC='\033[0m' # No Color
 # Default options
 RUN_UNIT=true
 RUN_INTEGRATION=true
+FIX_IMPORTS=true
+
+# Fix import paths
+if [ "$FIX_IMPORTS" = true ]; then
+    echo -e "${BLUE}[INFO]${NC} Setting up test environment with proper import paths..."
+    # Ensure our backend directory is in PYTHONPATH
+    export PYTHONPATH="$BACKEND_DIR:$PYTHONPATH"
+    echo "PYTHONPATH set to: $PYTHONPATH"
+fi
 RUN_PERFORMANCE=false
 RUN_WEBSOCKET=true
 VERBOSE=false
@@ -204,7 +213,8 @@ setup_test_environment() {
 
 # Function to build pytest command
 build_pytest_command() {
-    local cmd="python -m pytest"
+    # Quote the PYTHONPATH to handle spaces in paths
+    local cmd="PYTHONPATH=\"$BACKEND_DIR\" python -m pytest"
     
     # Add test directory
     cmd="$cmd tests/"

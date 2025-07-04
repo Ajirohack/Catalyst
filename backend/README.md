@@ -1,336 +1,337 @@
 # Catalyst Backend API
 
-A comprehensive FastAPI-based backend for project management with real-time communication analysis, sentiment tracking, and team collaboration insights.
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-green.svg)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+Enterprise-grade backend API for the Catalyst project management and analysis system, built with FastAPI and designed for scalability, security, and maintainability.
 
 ## 🚀 Features
 
-- **Project Management**: Create, update, and manage projects with detailed metadata
-- **Real-time Analysis**: WebSocket-based communication analysis with sentiment tracking
-- **Text Analysis**: Advanced NLP processing for meeting transcripts and messages
-- **Team Insights**: Participant tracking and collaboration metrics
-- **Performance Monitoring**: Built-in request tracking and performance metrics
-- **Enhanced Validation**: Comprehensive input validation and security measures
-- **Structured Logging**: Detailed logging with configurable levels and formats
+- **RESTful API** with automatic OpenAPI documentation
+- **Real-time WebSocket** support for live updates
+- **AI-powered analysis** with OpenAI and Anthropic integration
+- **Multi-format file processing** (PDF, DOCX, images with OCR)
+- **Advanced reporting** and analytics
+- **Therapeutic interventions** and recommendations
+- **Knowledge base** with vector search capabilities
+- **Enterprise security** with authentication and authorization
+- **Production-ready** with Docker containerization
+- **Comprehensive testing** and code quality tools
 
-## 📋 Requirements
+## 📋 Prerequisites
 
-- Python 3.8+
-- FastAPI 0.104.1+
-- See `requirements.txt` for complete dependency list
+- Python 3.11 or higher
+- Docker and Docker Compose (for containerized deployment)
+- Git
 
-## 🛠️ Installation
+## 🛠️ Quick Start
 
-### 1. Clone the Repository
+### Option 1: Local Development
 
-```bash
-git clone https://github.com/Ajirohack/Catalyst.git
-cd Catalyst/backend
-```
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd catalyst/backend
+   ```
 
-### 2. Create Virtual Environment
+2. **Run the setup script**
+   ```bash
+   ./scripts/setup-dev.sh
+   ```
 
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+3. **Activate virtual environment**
+   ```bash
+   source venv/bin/activate
+   ```
 
-### 3. Install Dependencies
+4. **Start the development server**
+   ```bash
+   python main.py
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+5. **Access the API**
+   - API: http://localhost:8000
+   - Documentation: http://localhost:8000/docs
+   - Health Check: http://localhost:8000/health
 
-### 4. Environment Configuration
+### Option 2: Docker Development
 
-```bash
-cp .env.example .env
-# Edit .env file with your configuration
-```
+1. **Start development environment**
+   ```bash
+   ./scripts/deploy.sh development
+   ```
 
-### 5. Run the Application
-
-```bash
-# Development mode
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-# Production mode
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-## 📖 API Documentation
-
-Once the server is running, access the interactive API documentation:
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI Schema**: http://localhost:8000/openapi.json
+2. **Access the API**
+   - API: http://localhost:8000
+   - Documentation: http://localhost:8000/docs
 
 ## 🏗️ Project Structure
 
 ```
 backend/
-├── main.py                 # FastAPI application entry point
-├── requirements.txt        # Python dependencies
-├── .env.example           # Environment configuration template
-├── config/                # Configuration modules
-│   ├── __init__.py
-│   └── logging.py         # Logging configuration
-├── database/              # Database models and future migrations
-│   ├── __init__.py
-│   └── models.py          # Database model definitions
-├── docs/                  # API documentation enhancements
-│   ├── __init__.py
-│   └── api_documentation.py
-├── middleware/            # Custom middleware
-│   ├── __init__.py
-│   └── performance.py     # Performance monitoring
-├── models/                # Pydantic models
-│   ├── __init__.py
-│   └── project.py
-├── routers/               # API route handlers
-│   ├── __init__.py
-│   ├── analysis.py        # Text analysis endpoints
-│   └── projects.py        # Project management endpoints
-├── schemas/               # Request/response schemas
-│   ├── __init__.py
-│   └── project_schema.py
-├── services/              # Business logic
-│   ├── __init__.py
+├── api/                    # API route handlers
+│   ├── advanced_features.py
+│   └── file_upload.py
+├── config/                 # Configuration files
+│   ├── ai_providers.py
+│   ├── enhanced_config.py
+│   ├── logging.py
+│   └── nginx/             # Nginx configuration
+├── database/              # Database models and migrations
+│   ├── models.py
+│   ├── unified_models.py
+│   └── migrations/
+├── routers/               # FastAPI routers
+│   ├── analysis.py
+│   ├── projects.py
+│   ├── ai_therapy.py
+│   └── ...
+├── services/              # Business logic services
+│   ├── ai_service.py
 │   ├── analysis_service.py
-│   ├── project_service.py
-│   └── whisper_service.py
+│   ├── therapeutic_interventions.py
+│   └── ...
+├── schemas/               # Pydantic schemas
+├── middleware/            # Custom middleware
+├── validators/            # Input validators
 ├── tests/                 # Test suite
-│   ├── conftest.py
-│   ├── test_analysis.py
-│   ├── test_integration.py
-│   ├── test_main.py
-│   └── test_projects.py
-└── validators/            # Input validation
-    ├── __init__.py
-    └── input_validators.py
+├── scripts/               # Deployment and utility scripts
+├── docs/                  # Documentation
+├── data/                  # Data storage
+├── logs/                  # Application logs
+└── reports/               # Generated reports
 ```
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-Key configuration options in `.env`:
+Create a `.env` file in the project root:
 
 ```env
 # Server Configuration
-HOST=0.0.0.0
-PORT=8000
-DEBUG=true
-ENVIRONMENT=development
-
-# CORS Configuration
-ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-
-# Security
-SECRET_KEY=your-secret-key-here
-
-# Logging
+API_HOST=0.0.0.0
+API_PORT=8000
+DEBUG=false
 LOG_LEVEL=INFO
 
-# Performance
-WEBSOCKET_HEARTBEAT_INTERVAL=30
+# AI Provider API Keys
+OPENAI_API_KEY=your_openai_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+# Database Configuration
+DATABASE_URL=postgresql://user:password@localhost:5432/catalyst
+# Or for SQLite: sqlite:///./catalyst.db
+
+# Redis Configuration (optional)
+REDIS_URL=redis://localhost:6379/0
+
+# Security
+SECRET_KEY=your_secret_key_here
+ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
 ```
 
-### Logging Configuration
+### AI Provider Setup
 
-The application uses structured logging with multiple handlers:
+1. **OpenAI**: Get API key from [OpenAI Platform](https://platform.openai.com/)
+2. **Anthropic**: Get API key from [Anthropic Console](https://console.anthropic.com/)
 
-- **Console**: Real-time log output
-- **File**: Detailed logs in `logs/catalyst.log`
-- **Error File**: Error-only logs in `logs/errors.log`
+## 🐳 Docker Deployment
 
-Log levels: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
+### Development
+```bash
+# Start development environment with hot reload
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+
+### Production
+```bash
+# Start production environment with all services
+docker-compose --profile production up -d
+```
+
+### Services Included
+- **catalyst-backend**: Main FastAPI application
+- **postgres**: PostgreSQL database
+- **redis**: Redis cache and session store
+- **nginx**: Reverse proxy and load balancer (production)
 
 ## 🧪 Testing
 
-### Run All Tests
-
+### Run Tests
 ```bash
-pytest
+# Activate virtual environment
+source venv/bin/activate
+
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=. --cov-report=html
+
+# Run specific test file
+pytest tests/test_analysis.py -v
 ```
 
-### Run Specific Test Categories
-
+### Code Quality
 ```bash
-# Unit tests
-pytest tests/test_*.py -v
+# Format code
+black .
 
-# Integration tests
-pytest tests/test_integration.py -v
+# Sort imports
+isort .
 
-# With coverage
-pytest --cov=. --cov-report=html
+# Lint code
+flake8 .
+
+# Type checking
+mypy .
 ```
 
-### Test Coverage
+## 📚 API Documentation
 
-Current test coverage: **58 tests passing** with comprehensive coverage of:
+### Interactive Documentation
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
-- Project management endpoints
-- Text analysis functionality
-- WebSocket communication
-- Error handling and validation
-- Integration workflows
+### Key Endpoints
 
-## 🔌 API Endpoints
-
-### Projects
-
-- `POST /api/projects/` - Create new project
-- `GET /api/projects/` - List all projects
-- `GET /api/projects/{project_id}` - Get project details
-- `PUT /api/projects/{project_id}` - Update project
-- `DELETE /api/projects/{project_id}` - Delete project
-
-### Analysis
-
-- `POST /api/analysis/text` - Analyze text content
-- `GET /api/analysis/history/{project_id}` - Get analysis history
-- `WebSocket /ws/{project_id}` - Real-time message processing
-
-### Health & Monitoring
-
-- `GET /health` - System health check
-- `GET /api/analysis/health/check` - Analysis service health
-- `GET /api/projects/health/check` - Project service health
-
-## 🌐 WebSocket Communication
-
-### Connection
-
-```javascript
-const ws = new WebSocket('ws://localhost:8000/ws/project-id');
-```
-
-### Message Types
-
-```json
-{
-  "type": "whisper_message",
-  "data": {
-    "content": "Message content",
-    "sender": "user@example.com",
-    "platform": "slack",
-    "project_id": "project-uuid"
-  }
-}
-```
-
-Supported types: `whisper_message`, `analysis_request`, `status_update`, `ping`, `pong`
-
-## 🚀 Deployment
-
-### Docker Deployment
-
-```dockerfile
-# Dockerfile example
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-### Production Considerations
-
-1. **Environment Variables**: Set production values in `.env`
-2. **Database**: Configure PostgreSQL or preferred database
-3. **Caching**: Set up Redis for improved performance
-4. **Monitoring**: Enable Prometheus metrics collection
-5. **Security**: Implement authentication and rate limiting
-6. **SSL/TLS**: Configure HTTPS for production
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/api/projects` | GET, POST | Project management |
+| `/api/analysis` | POST | Text analysis |
+| `/api/v1/ai-therapy` | POST | AI therapy recommendations |
+| `/api/v1/advanced` | POST | Advanced features |
+| `/api/knowledge-base` | GET, POST | Knowledge base operations |
 
 ## 🔒 Security
 
-### Current Security Measures
+- **Authentication**: JWT-based authentication
+- **Authorization**: Role-based access control
+- **CORS**: Configurable cross-origin resource sharing
+- **Rate Limiting**: API rate limiting with Redis
+- **Input Validation**: Comprehensive input validation
+- **Security Headers**: Standard security headers
+- **Non-root Container**: Docker containers run as non-root user
 
-- Input validation and sanitization
-- CORS configuration
-- Request size limits
-- SQL injection prevention (prepared for database integration)
+## 📊 Monitoring
 
-### Production Security Checklist
+### Health Checks
+- Application health: `/health`
+- Database connectivity check
+- AI service availability check
 
-- [ ] Implement authentication (JWT/OAuth)
-- [ ] Add rate limiting
-- [ ] Configure HTTPS/SSL
-- [ ] Set up API key management
-- [ ] Enable request logging
-- [ ] Implement role-based access control
+### Logging
+- Structured logging with configurable levels
+- Request/response logging
+- Performance monitoring
+- Error tracking
 
-## 📊 Performance Monitoring
+### Metrics (Optional)
+- Prometheus metrics endpoint
+- Custom business metrics
+- Performance counters
 
-The application includes built-in performance monitoring:
+## 🚀 Production Deployment
 
-- **Request Timing**: Automatic response time tracking
-- **Request Counting**: Endpoint usage statistics
-- **Slow Request Detection**: Configurable threshold alerts
-- **Error Rate Monitoring**: Automatic error tracking
+### Prerequisites
+1. Docker and Docker Compose
+2. SSL certificates (for HTTPS)
+3. Environment variables configured
+4. Database setup
 
-### Performance Headers
+### Deployment Steps
+1. **Clone repository**
+2. **Configure environment variables**
+3. **Run deployment script**
+   ```bash
+   ./scripts/deploy.sh production
+   ```
+4. **Verify deployment**
+   ```bash
+   curl -f http://localhost:8000/health
+   ```
 
-Each response includes performance headers:
+### Scaling
+```bash
+# Scale backend service
+docker-compose up -d --scale catalyst-backend=3
 
-- `X-Process-Time`: Request processing time in seconds
-- `X-Request-Count`: Total requests to this endpoint
+# Use nginx for load balancing
+docker-compose --profile production up -d
+```
+
+## 🛠️ Development
+
+### Adding New Features
+1. Create feature branch
+2. Add tests for new functionality
+3. Implement feature
+4. Update documentation
+5. Run tests and quality checks
+6. Submit pull request
+
+### Code Style
+- Follow PEP 8 guidelines
+- Use type hints
+- Write comprehensive docstrings
+- Maintain test coverage above 80%
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Import Errors**
+   - Ensure virtual environment is activated
+   - Check Python path and dependencies
+
+2. **Database Connection**
+   - Verify database URL in `.env`
+   - Check database service status
+
+3. **AI Service Errors**
+   - Verify API keys are set
+   - Check network connectivity
+
+4. **Docker Issues**
+   - Check Docker daemon status
+   - Verify port availability
+   - Review container logs
+
+### Logs
+```bash
+# Application logs
+tail -f logs/catalyst.log
+
+# Docker logs
+docker-compose logs -f catalyst-backend
+
+# Database logs
+docker-compose logs -f postgres
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes and add tests
-4. Run the test suite: `pytest`
-5. Commit your changes: `git commit -m 'Add feature'`
-6. Push to the branch: `git push origin feature-name`
-7. Submit a pull request
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-### Code Quality Standards
-
-- Follow PEP 8 style guidelines
-- Add type hints to all functions
-- Write comprehensive tests for new features
-- Update documentation for API changes
-- Use meaningful commit messages
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
-
-## 🆘 Support
+## 📞 Support
 
 For support and questions:
+- Create an issue in the repository
+- Check the documentation
+- Review existing issues and discussions
 
-- **GitHub Issues**: [Create an issue](https://github.com/Ajirohack/Catalyst/issues)
-- **Documentation**: Check the `/docs` endpoint when running
-- **Email**: support@catalyst-platform.com
+---
 
-## 🗺️ Roadmap
-
-### Upcoming Features
-
-- [ ] Database integration (PostgreSQL)
-- [ ] User authentication and authorization
-- [ ] Advanced analytics dashboard
-- [ ] Real-time collaboration features
-- [ ] Mobile API optimizations
-- [ ] Microservices architecture
-- [ ] Advanced caching strategies
-- [ ] Machine learning integration
-
-### Version History
-
-- **v1.0.0**: Initial release with core functionality
-  - Project management
-  - Text analysis
-  - WebSocket communication
-  - Comprehensive test suite
+**Built with ❤️ using FastAPI, Docker, and modern Python practices.**

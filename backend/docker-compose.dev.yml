@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  # Development override for main application
+  catalyst-backend:
+    build:
+      target: development
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - ENVIRONMENT=development
+      - DATABASE_URL=sqlite:///./data/catalyst_dev.db
+      - REDIS_URL=redis://redis:6379/1
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/venv
+      - /app/__pycache__
+      - dev_logs:/app/logs
+    ports:
+      - "8000:8000"
+      - "8001:8001" # Additional port for debugging
+    command:
+      [
+        "uvicorn",
+        "main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+        "--log-level",
+        "debug",
+      ]
+    depends_on:
+      redis:
+        condition: service_started
+    networks:
+      - catalyst-network
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+
+  # Development database (optional - use SQLite for simpler dev setup)
+  postgres:
+    environment:
+      - POSTGRES_DB=catalyst_dev
+      - POSTGRES_USER=catalyst_dev
+      - POSTGRES_PASSWORD=catalyst_dev_password
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    profiles:
+      - with-postgres
+
+  # Development Redis (lightweight config)
+  redis:
+    profiles:
+      - with-redis
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+
+# Additional volumes for development
+volumes:
+  postgres_dev_data:
+    driver: local
+  dev_logs:
+    driver: local
+
+networks:
+  catalyst-network:
+    external: false

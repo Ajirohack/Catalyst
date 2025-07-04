@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator, root_field_validator
 import re
 from datetime import datetime
 
@@ -73,11 +73,11 @@ class EnhancedProjectCreate(BaseModel):
     goals: Optional[List[str]] = Field(default_factory=list)
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    @validator('name')
+    @field_validator('name')
     def validate_name(cls, v):
         return ProjectNameValidator.validate_project_name(v)
     
-    @validator('description')
+    @field_validator('description')
     def validate_description(cls, v):
         if v is not None:
             v = v.strip()
@@ -85,7 +85,7 @@ class EnhancedProjectCreate(BaseModel):
                 return None
         return v
     
-    @validator('goals')
+    @field_validator('goals')
     def validate_goals(cls, v):
         if v:
             # Remove empty goals and validate each goal
@@ -99,7 +99,7 @@ class EnhancedProjectCreate(BaseModel):
             return validated_goals
         return []
     
-    @validator('metadata')
+    @field_validator('metadata')
     def validate_metadata(cls, v):
         if v:
             # Ensure metadata values are JSON serializable
@@ -124,11 +124,11 @@ class EnhancedTextAnalysisRequest(BaseModel):
     analysis_type: Optional[str] = Field("comprehensive", regex=r'^(comprehensive|sentiment|keywords|summary)$')
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    @validator('content')
+    @field_validator('content')
     def validate_content(cls, v):
         return TextContentValidator.validate_text_content(v)
     
-    @validator('metadata')
+    @field_validator('metadata')
     def validate_metadata(cls, v):
         if v and len(str(v)) > 2000:
             raise ValueError("Analysis metadata cannot exceed 2000 characters when serialized")
@@ -145,14 +145,14 @@ class EnhancedWhisperMessage(BaseModel):
     timestamp: Optional[datetime] = None
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     
-    @validator('content')
+    @field_validator('content')
     def validate_content(cls, v):
         v = v.strip()
         if not v:
             raise ValueError("Message content cannot be empty")
         return v
     
-    @validator('sender')
+    @field_validator('sender')
     def validate_sender(cls, v):
         v = v.strip()
         if not v:
@@ -163,13 +163,13 @@ class EnhancedWhisperMessage(BaseModel):
                 raise ValueError("Invalid email format for sender")
         return v
     
-    @validator('timestamp', pre=True)
+    @field_validator('timestamp', pre=True)
     def validate_timestamp(cls, v):
         if v is None:
             return datetime.now()
         return v
     
-    @validator('metadata')
+    @field_validator('metadata')
     def validate_metadata(cls, v):
         if v and len(str(v)) > 1000:
             raise ValueError("Message metadata cannot exceed 1000 characters when serialized")

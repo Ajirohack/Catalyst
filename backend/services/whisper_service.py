@@ -1,14 +1,92 @@
-import asyncio
-from textblob import TextBlob
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timezone
-import json
-import re
+import os
+import tempfile
+import logging
+from typing import Optional, Dict, Any, List, Union
+from pathlib import Path
+
+try:
+    import openai
+    import whisper
+    import torch
+except ImportError as e:
+    logging.warning(f"Optional dependency not available: {e}")
+    try:
+        from ..llm_router.llm_router import LLMRouter
+        from catalyst_backend.schemas.ai_provider_schema import (
+            AIResponse
+        )
+        from catalyst_backend.config.ai_providers import AIProviderType
+    except ImportError as e:
+        logging.warning(f"Import error in whisper_service: {e}")
+
+try:
+    from textblob import TextBlob
+except ImportError:
+    TextBlob = None
+
+try:
+    from typing import Dict, List, Any, Optional
+    from datetime import datetime, timezone, timezone
+    import json
+    import re
+    import asyncio
+    
+    # Import enhanced AI services
+    from .llm_router import generate_ai_response, llm_router
+    from catalyst_backend.schemas.ai_provider_schema import AIRequest, AIResponse
+    from catalyst_backend.config.ai_providers import AIProviderType, ai_config
+except ImportError as e:
+    logging.error(f"Import error in whisper_service: {e}")
+
+logger = logging.getLogger(__name__)
 
 class WhisperService:
     """Service for real-time whisper suggestions and coaching"""
     
     def __init__(self):
+        # Audio transcription configuration
+        self.api_key = os.getenv('OPENAI_API_KEY')
+        self.model_cache: Dict[str, Any] = {}  # Cache for loaded models
+        self.supported_formats = {
+            'audio': ['.mp3', '.wav', '.m4a', '.flac', '.aac', '.ogg',
+                     '.wma'],
+            'video': ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv',
+                     '.webm']
+        }
+        self.max_file_size = 25 * 1024 * 1024  # 25MB limit
+        self.chunk_duration = 600  # 10 minutes in seconds for chunking
+        
+        # Enhanced configuration
+        self.quality_settings = {
+            'high': {'model': 'large-v2', 'temperature': 0.0},
+            'medium': {'model': 'medium', 'temperature': 0.2},
+            'fast': {'model': 'base', 'temperature': 0.4}
+        }
+        
+        # Language detection and processing
+        self.language_confidence_threshold = 0.8
+        self.auto_detect_language = True
+        
+        # Advanced processing options
+        self.enable_speaker_detection = False
+        self.enable_emotion_analysis = False
+        self.enable_topic_extraction = False
+        
+        # Output formatting
+        self.timestamp_precision = 'word'  # 'word', 'segment', 'none'
+        self.include_confidence_scores = True
+        
+        # Error handling and retry logic
+        self.max_retries = 3
+        self.retry_delay = 1.0
+        
+        # Performance optimization
+        gpu_available = torch.cuda.is_available() if 'torch' in globals() else False
+        self.use_gpu = gpu_available
+        self.batch_processing = True
+        
+        # Initialize models based on configuration
+        self._initialize_models()
         # Coaching templates based on different scenarios
         self.coaching_templates = {
             "positive_reinforcement": [
@@ -64,7 +142,88 @@ class WhisperService:
         }
     
     async def whisper_stream(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
-        """Analyze incoming message and return suggestion."""
+        """Analyze incoming message and return enhanced AI-powered suggestion."""
+        try:
+            # Enhanced AI analysis
+            enhanced_suggestion = await self._generate_enhanced_whisper(message, context)
+            if enhanced_suggestion and "error" not in enhanced_suggestion:
+                return f"[Catalyst Whisper] {enhanced_suggestion}"
+            
+            logger.warning("Enhanced whisper failed, falling back to basic analysis")
+            
+        except Exception as e:
+            logger.error(f"Enhanced whisper error: {str(e)}")
+        
+        # Fallback to basic analysis
+        fallback_suggestion = await self._generate_fallback_whisper(message, context)
+        return f"[Catalyst Whisper] {fallback_suggestion}"
+    
+    async def _generate_enhanced_whisper(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
+        """Generate enhanced whisper suggestion using AI."""
+        try:
+            # Build context for AI
+            context_info = ""
+            if context:
+                relationship_stage = context.get("relationship_stage", "unknown")
+                conversation_history = context.get("recent_messages", [])
+                participants = context.get("participants", [])
+                
+                context_info = f"""
+Context:
+- Relationship stage: {relationship_stage}
+- Participants: {', '.join(participants) if participants else 'Unknown'}
+- Recent conversation flow: {len(conversation_history)} previous messages
+"""
+            
+            ai_request = AIRequest(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """You are an expert relationship coach providing real-time whisper suggestions. 
+
+Your role:
+- Analyze the incoming message for emotional tone, intent, and relationship dynamics
+- Provide a single, actionable suggestion for how to respond thoughtfully
+- Focus on improving communication, showing empathy, and strengthening the relationship
+- Keep suggestions brief (1-2 sentences), specific, and emotionally intelligent
+
+Response guidelines:
+- If the message shows upset/frustration: Suggest empathy and understanding
+- If positive: Suggest building on the positive energy
+- If neutral: Suggest deepening engagement or connection
+- Always consider the relationship context and communication patterns"""
+                    },
+                    {
+                        "role": "user",
+                        "content": f"{context_info}\n\nIncoming message: \"{message}\"\n\nProvide a whisper suggestion:"
+                    }
+                ],
+                analysis_type="whisper_coaching",
+                max_tokens=ai_config.whisper_max_tokens,
+                temperature=ai_config.whisper_temperature
+            )
+            
+            ai_response = await generate_ai_response(ai_request)
+            
+            # Clean up the response
+            suggestion = ai_response.content.strip()
+            
+            # Remove any quotes or formatting
+            suggestion = suggestion.strip('"\'')
+            suggestion = suggestion.replace('[Catalyst Whisper]', '').strip()
+            
+            # Ensure it's a reasonable length for a whisper
+            if len(suggestion) > 200:
+                suggestion = suggestion[:197] + "..."
+            
+            return suggestion
+            
+        except Exception as e:
+            logger.error(f"Enhanced whisper generation failed: {str(e)}")
+            raise
+    
+    async def _generate_fallback_whisper(self, message: str, context: Optional[Dict[str, Any]] = None) -> str:
+        """Generate fallback whisper using basic analysis."""
         try:
             # Analyze sentiment
             sentiment_analysis = await self._analyze_message_sentiment(message)
@@ -84,10 +243,10 @@ class WhisperService:
                 context
             )
             
-            return f"[Catalyst Whisper] {suggestion}"
+            return suggestion
             
         except Exception as e:
-            return f"[Catalyst Whisper] Unable to analyze message: {str(e)}"
+            return f"Unable to analyze message: {str(e)}"
     
     async def _analyze_message_sentiment(self, message: str) -> Dict[str, Any]:
         """Analyze sentiment of the incoming message."""
@@ -301,7 +460,148 @@ class WhisperService:
         conversation_history: List[Dict[str, Any]], 
         relationship_context: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """Get contextual coaching based on current message and conversation history."""
+        """Get enhanced contextual coaching based on current message and conversation history."""
+        try:
+            # Enhanced AI-powered contextual analysis
+            enhanced_coaching = await self._generate_enhanced_contextual_coaching(
+                current_message, conversation_history, relationship_context
+            )
+            
+            if enhanced_coaching and "error" not in enhanced_coaching:
+                return enhanced_coaching
+            
+            logger.warning("Enhanced contextual coaching failed, falling back to basic analysis")
+            
+        except Exception as e:
+            logger.error(f"Enhanced contextual coaching error: {str(e)}")
+        
+        # Fallback to basic analysis
+        return await self._generate_basic_contextual_coaching(
+            current_message, conversation_history, relationship_context
+        )
+    
+    async def _generate_enhanced_contextual_coaching(
+        self,
+        current_message: str,
+        conversation_history: List[Dict[str, Any]],
+        relationship_context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Generate enhanced contextual coaching using AI."""
+        try:
+            # Prepare conversation context
+            history_summary = ""
+            if conversation_history:
+                recent_messages = conversation_history[-5:]  # Last 5 messages for context
+                history_summary = "\n".join([
+                    f"{msg.get('sender', 'Unknown')}: {msg.get('content', '')}"
+                    for msg in recent_messages
+                ])
+            
+            # Prepare relationship context
+            relationship_info = ""
+            if relationship_context:
+                stage = relationship_context.get("stage", "unknown")
+                participants = relationship_context.get("participants", [])
+                relationship_info = f"Relationship stage: {stage}, Participants: {', '.join(participants)}"
+            
+            ai_request = AIRequest(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """You are an expert relationship coach providing comprehensive contextual guidance.
+
+Analyze the current message in context of:
+1. Recent conversation flow and patterns
+2. Relationship dynamics and stage
+3. Communication effectiveness
+4. Emotional undertones and needs
+
+Provide coaching in this JSON format:
+{
+  "immediate_suggestion": "specific response suggestion",
+  "strategic_advice": ["broader relationship advice points"],
+  "emotional_analysis": {
+    "sender_emotional_state": "detected emotion",
+    "relationship_temperature": "warm/neutral/tense",
+    "communication_quality": "score 0-1"
+  },
+  "conversation_insights": ["key observations about communication patterns"],
+  "confidence": 0.0-1.0
+}"""
+                    },
+                    {
+                        "role": "user",
+                        "content": f"""Analyze this communication situation:
+
+{relationship_info}
+
+Recent conversation:
+{history_summary}
+
+Current message: "{current_message}"
+
+Provide comprehensive coaching guidance:"""
+                    }
+                ],
+                analysis_type="contextual_coaching",
+                max_tokens=800,
+                temperature=0.3
+            )
+            
+            ai_response = await generate_ai_response(ai_request)
+            
+            # Parse AI response
+            try:
+                coaching_data = json.loads(ai_response.content)
+                
+                return {
+                    "immediate_suggestion": coaching_data.get("immediate_suggestion", ""),
+                    "strategic_advice": coaching_data.get("strategic_advice", []),
+                    "current_analysis": {
+                        "emotional_state": coaching_data.get("emotional_analysis", {}).get("sender_emotional_state", "unknown"),
+                        "relationship_temperature": coaching_data.get("emotional_analysis", {}).get("relationship_temperature", "neutral"),
+                        "communication_quality": coaching_data.get("emotional_analysis", {}).get("communication_quality", 0.5)
+                    },
+                    "conversation_insights": coaching_data.get("conversation_insights", []),
+                    "ai_metadata": {
+                        "provider": ai_response.provider,
+                        "confidence": coaching_data.get("confidence", ai_response.confidence),
+                        "cost": ai_response.cost,
+                        "response_time_ms": ai_response.response_time_ms
+                    },
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                }
+                
+            except json.JSONDecodeError:
+                # If AI doesn't return valid JSON, extract key parts
+                return {
+                    "immediate_suggestion": ai_response.content[:200],
+                    "strategic_advice": [ai_response.content],
+                    "current_analysis": {
+                        "emotional_state": "unknown",
+                        "relationship_temperature": "neutral", 
+                        "communication_quality": 0.5
+                    },
+                    "conversation_insights": ["AI analysis available in strategic advice"],
+                    "ai_metadata": {
+                        "provider": ai_response.provider,
+                        "confidence": ai_response.confidence,
+                        "cost": ai_response.cost
+                    },
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                }
+                
+        except Exception as e:
+            logger.error(f"Enhanced contextual coaching failed: {str(e)}")
+            raise
+    
+    async def _generate_basic_contextual_coaching(
+        self,
+        current_message: str,
+        conversation_history: List[Dict[str, Any]],
+        relationship_context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Generate basic contextual coaching as fallback."""
         try:
             # Analyze current message
             current_sentiment = await self._analyze_message_sentiment(current_message)
@@ -384,21 +684,133 @@ class WhisperService:
             return [f"Strategic advice generation failed: {str(e)}"]
     
     async def process_message(self, whisper_message) -> Dict[str, Any]:
-        """Process a whisper message and return structured response."""
+        """Process a whisper message and return structured response with enhanced AI."""
+        try:
+            # Enhanced AI processing
+            enhanced_response = await self._process_enhanced_message(whisper_message)
+            if enhanced_response and "error" not in enhanced_response:
+                return enhanced_response
+                
+            logger.warning("Enhanced message processing failed, falling back to basic processing")
+            
+        except Exception as e:
+            logger.error(f"Enhanced message processing error: {str(e)}")
+        
+        # Fallback to basic processing
+        return await self._process_basic_message(whisper_message)
+    
+    async def _process_enhanced_message(self, whisper_message) -> Dict[str, Any]:
+        """Process message with enhanced AI analysis."""
+        try:
+            # Create context for AI
+            message_context = {
+                "sender": getattr(whisper_message, 'sender', 'unknown'),
+                "platform": getattr(whisper_message, 'platform', 'unknown'),
+                "project_id": getattr(whisper_message, 'project_id', None),
+                "content": getattr(whisper_message, 'content', '')
+            }
+            
+            ai_request = AIRequest(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """You are a real-time relationship coaching assistant. Analyze the message and provide structured guidance.
+
+Respond in JSON format:
+{
+  "suggestions": ["immediate actionable suggestions"],
+  "urgency_level": "low/medium/high",
+  "category": "emotional_support/conflict_resolution/engagement/communication_improvement/positive_reinforcement",
+  "confidence": 0.0-1.0,
+  "emotional_tone": "detected emotion",
+  "coaching_priority": "what to focus on first"
+}
+
+Guidelines:
+- High urgency: conflict, distress, important relationship moments
+- Medium urgency: emotional needs, communication improvements
+- Low urgency: general engagement, positive reinforcement"""
+                    },
+                    {
+                        "role": "user",
+                        "content": f"""Process this message for real-time coaching:
+
+Sender: {message_context['sender']}
+Platform: {message_context['platform']}
+Message: "{message_context['content']}"
+
+Provide structured coaching response:"""
+                    }
+                ],
+                analysis_type="message_processing",
+                max_tokens=400,
+                temperature=0.2
+            )
+            
+            ai_response = await generate_ai_response(ai_request)
+            
+            # Parse AI response
+            try:
+                response_data = json.loads(ai_response.content)
+                
+                return {
+                    "suggestions": response_data.get("suggestions", ["Continue the conversation naturally"]),
+                    "urgency_level": response_data.get("urgency_level", "medium"),
+                    "category": response_data.get("category", "general"),
+                    "confidence": response_data.get("confidence", ai_response.confidence),
+                    "context": {
+                        "sender": message_context["sender"],
+                        "platform": message_context["platform"],
+                        "project_id": message_context["project_id"],
+                        "emotional_tone": response_data.get("emotional_tone", "neutral"),
+                        "coaching_priority": response_data.get("coaching_priority", "general communication")
+                    },
+                    "ai_metadata": {
+                        "provider": ai_response.provider,
+                        "cost": ai_response.cost,
+                        "response_time_ms": ai_response.response_time_ms
+                    }
+                }
+                
+            except json.JSONDecodeError:
+                # Extract suggestions from non-JSON response
+                suggestions = [line.strip() for line in ai_response.content.split('\n') if line.strip()]
+                
+                return {
+                    "suggestions": suggestions[:3] if suggestions else ["Continue the conversation naturally"],
+                    "urgency_level": "medium",
+                    "category": "general",
+                    "confidence": ai_response.confidence,
+                    "context": message_context,
+                    "ai_metadata": {
+                        "provider": ai_response.provider,
+                        "cost": ai_response.cost
+                    }
+                }
+                
+        except Exception as e:
+            logger.error(f"Enhanced message processing failed: {str(e)}")
+            raise
+    
+    async def _process_basic_message(self, whisper_message) -> Dict[str, Any]:
+        """Process message with basic analysis as fallback."""
         try:
             # Use the existing whisper_stream method
-            suggestion = await self.whisper_stream(whisper_message.content)
+            suggestion = await self.whisper_stream(getattr(whisper_message, 'content', ''))
+            
+            # Clean up the suggestion
+            clean_suggestion = suggestion.replace('[Catalyst Whisper]', '').strip()
             
             # Return structured response matching expected format
             return {
-                "suggestions": [suggestion],
+                "suggestions": [clean_suggestion],
                 "urgency_level": "medium",
                 "category": "general",
-                "confidence": 0.8,
+                "confidence": 0.6,  # Moderate confidence for basic analysis
                 "context": {
-                    "sender": whisper_message.sender,
-                    "platform": whisper_message.platform,
-                    "project_id": whisper_message.project_id
+                    "sender": getattr(whisper_message, 'sender', 'unknown'),
+                    "platform": getattr(whisper_message, 'platform', 'unknown'),
+                    "project_id": getattr(whisper_message, 'project_id', None)
                 }
             }
         except Exception as e:
@@ -412,4 +824,388 @@ class WhisperService:
     
     def get_timestamp(self) -> str:
         """Get current timestamp."""
-        return datetime.utcnow().isoformat()
+        return datetime.now(timezone.utc).isoformat()
+    
+    def _initialize_models(self):
+        """Initialize Whisper models for local transcription."""
+        try:
+            if 'whisper' not in globals():
+                logging.warning("Whisper not available, skipping model initialization")
+                return
+            
+            logging.info(
+                f"Initializing Whisper models with GPU: {self.use_gpu}"
+            )
+            
+            # Load models based on quality settings
+            for quality, settings in self.quality_settings.items():
+                model_name = settings['model']
+                try:
+                    device = "cuda" if self.use_gpu else "cpu"
+                    model = whisper.load_model(model_name, device=device)
+                    self.model_cache[model_name] = model
+                    logging.info(f"Loaded Whisper model: {model_name}")
+                except Exception as e:
+                    logging.error(f"Failed to load model {model_name}: {e}")
+                    
+        except Exception as e:
+            logging.error(f"Failed to initialize Whisper models: {e}")
+            self.model_cache = {}
+    
+    async def transcribe_audio(
+        self, 
+        file_path: str, 
+        options: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Transcribe audio file to text with enhanced options."""
+        try:
+            # Validate file
+            if not await self._validate_audio_file(file_path):
+                raise ValueError(f"Invalid audio file: {file_path}")
+            
+            # Get processing options
+            quality = (
+                options.get('quality', 'medium') if options else 'medium'
+            )
+            language = options.get('language') if options else None
+            
+            # Choose transcription method
+            if self._should_use_api(file_path):
+                result = await self._transcribe_with_api(file_path, language)
+            else:
+                result = await self._transcribe_with_local_model(
+                    file_path, quality, language
+                )
+            
+            # Post-process results
+            if self.enable_speaker_detection:
+                result = await self._add_speaker_detection(
+                    result, file_path
+                )
+            
+            if self.enable_emotion_analysis:
+                result = await self._add_emotion_analysis(result)
+            
+            if self.enable_topic_extraction:
+                result = await self._add_topic_extraction(result)
+            
+            return result
+            
+        except Exception as e:
+            return {"error": f"Transcription failed: {str(e)}"}
+    
+    async def transcribe_video(
+        self, 
+        file_path: str, 
+        options: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Transcribe video file by extracting audio first."""
+        try:
+            # Extract audio from video
+            audio_path = await self._extract_audio_from_video(file_path)
+            
+            try:
+                # Transcribe the extracted audio
+                result = await self.transcribe_audio(audio_path, options)
+                result['source_type'] = 'video'
+                result['original_file'] = file_path
+                return result
+            finally:
+                # Clean up temporary audio file
+                if os.path.exists(audio_path):
+                    os.remove(audio_path)
+                    
+        except Exception as e:
+            return {"error": f"Video transcription failed: {str(e)}"}
+    
+    async def batch_transcribe(
+        self, 
+        file_paths: List[str], 
+        options: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, Any]]:
+        """Transcribe multiple files in batch."""
+        results = []
+        
+        for file_path in file_paths:
+            try:
+                if self._is_video_file(file_path):
+                    result = await self.transcribe_video(
+                        file_path, options
+                    )
+                else:
+                    result = await self.transcribe_audio(
+                        file_path, options
+                    )
+                
+                results.append({
+                    'file_path': file_path,
+                    'success': True,
+                    'result': result
+                })
+                
+            except Exception as e:
+                logging.error(f"Failed to transcribe {file_path}: {e}")
+                results.append({
+                    'file_path': file_path,
+                    'success': False,
+                    'error': str(e)
+                })
+        
+        return results
+    
+    async def _validate_audio_file(self, file_path: str) -> bool:
+        """Validate audio file format and accessibility."""
+        try:
+            if not os.path.exists(file_path):
+                return False
+            
+            file_ext = Path(file_path).suffix.lower()
+            all_formats = self.supported_formats['audio'] + self.supported_formats['video']
+            
+            return file_ext in all_formats
+            
+        except Exception as e:
+            logging.error(f"File validation error: {e}")
+            return False
+    
+    async def _transcribe_with_api(
+        self, 
+        file_path: str, 
+        language: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Transcribe using OpenAI Whisper API."""
+        try:
+            with open(file_path, 'rb') as audio_file:
+                transcript = openai.Audio.transcribe(
+                    model="whisper-1",
+                    file=audio_file,
+                    language=language,
+                    response_format="verbose_json",
+                    timestamp_granularities=["word", "segment"]
+                )
+            
+            return self._format_result(transcript, 'api')
+            
+        except Exception as e:
+            raise RuntimeError(f"API transcription failed: {str(e)}")
+    
+    async def _transcribe_with_local_model(
+        self, 
+        file_path: str, 
+        quality: str, 
+        language: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Transcribe using local Whisper model."""
+        try:
+            model_name = self.quality_settings[quality]['model']
+            temperature = self.quality_settings[quality]['temperature']
+            
+            if model_name not in self.model_cache:
+                logging.warning(
+                    f"Model {model_name} not loaded, using base model"
+                )
+                model_name = 'base'
+            
+            model = self.model_cache.get(model_name)
+            if not model:
+                raise RuntimeError(
+                    "No Whisper model available for transcription"
+                )
+            
+            # Transcribe with the local model
+            result = model.transcribe(
+                file_path,
+                language=language,
+                temperature=temperature,
+                word_timestamps=True,
+                verbose=False
+            )
+            
+            return self._format_result(result, 'local')
+            
+        except Exception as e:
+            raise RuntimeError(f"Local transcription failed: {str(e)}")
+    
+    async def _extract_audio_from_video(
+        self, video_path: str
+    ) -> str:
+        """Extract audio from video file using ffmpeg."""
+        try:
+            # Create temporary file for audio
+            temp_dir = tempfile.gettempdir()
+            base_name = os.path.basename(video_path)
+            audio_filename = f"extracted_audio_{base_name}.wav"
+            audio_path = os.path.join(temp_dir, audio_filename)
+            
+            # Use ffmpeg to extract audio (you'll need to install ffmpeg)
+            import subprocess
+            
+            cmd = [
+                'ffmpeg', '-i', video_path, '-vn', '-acodec',
+                'pcm_s16le', '-ar', '16000', '-ac', '1', audio_path, '-y'
+            ]
+            
+            process = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if process.returncode != 0:
+                raise RuntimeError(
+                    f"Failed to extract audio: {process.stderr}"
+                )
+            
+            return audio_path
+            
+        except Exception as e:
+            raise RuntimeError(f"Audio extraction failed: {str(e)}")
+    
+    async def _add_speaker_detection(
+        self, result: Dict[str, Any], file_path: str
+    ) -> Dict[str, Any]:
+        """Add speaker detection to transcription results."""
+        try:
+            # Placeholder for speaker detection logic
+            # This would integrate with libraries like pyannote.audio
+            logging.info("Speaker detection requested but not implemented")
+            result['speakers'] = []
+            return result
+            
+        except Exception as e:
+            logging.error(f"Speaker detection failed: {e}")
+            return result
+    
+    async def _add_emotion_analysis(
+        self, result: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Add emotion analysis to transcription results."""
+        try:
+            # Placeholder for emotion analysis
+            logging.info("Emotion analysis requested but not implemented")
+            result['emotions'] = []
+            return result
+            
+        except Exception as e:
+            logging.error(f"Emotion analysis failed: {e}")
+            return result
+    
+    async def _add_topic_extraction(
+        self, result: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Add topic extraction to transcription results."""
+        try:
+            # Placeholder for topic extraction
+            logging.info("Topic extraction requested but not implemented")
+            result['topics'] = []
+            return result
+            
+        except Exception as e:
+            logging.error(f"Topic extraction failed: {e}")
+            return result
+    
+    def _should_use_api(self, file_path: str) -> bool:
+        """Determine whether to use API or local model based on file size and availability."""
+        try:
+            file_size = os.path.getsize(file_path)
+            return (
+                file_size <= self.max_file_size and 
+                self.api_key is not None
+            )
+        except Exception:
+            return False
+    
+    def _is_video_file(self, file_path: str) -> bool:
+        """Check if file is a video file."""
+        file_ext = Path(file_path).suffix.lower()
+        return file_ext in self.supported_formats['video']
+    
+    def _format_result(
+        self, 
+        raw_result: Dict[str, Any], 
+        source_type: str = 'audio'
+    ) -> Dict[str, Any]:
+        """Format transcription result into standardized format."""
+        return {
+            'text': raw_result.get('text', ''),
+            'confidence': raw_result.get('confidence', 0.0),
+            'language': raw_result.get('language', 'unknown'),
+            'duration': raw_result.get('duration', 0.0),
+            'segments': self._format_segments(
+                raw_result.get('segments', [])
+            ),
+            'words': (
+                self._format_words(raw_result.get('words', []))
+                if self.timestamp_precision == 'word' else []
+            ),
+            'source_type': source_type,
+            'processing_time': raw_result.get('processing_time', 0.0),
+            'model_used': raw_result.get('model_used', 'unknown'),
+            'quality_metrics': self._calculate_quality_metrics(raw_result)
+        }
+    
+    def _format_segments(self, segments: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Format segment data."""
+        formatted_segments = []
+        for segment in segments:
+            formatted_segments.append({
+                'id': segment.get('id', 0),
+                'start': segment.get('start', 0.0),
+                'end': segment.get('end', 0.0),
+                'text': segment.get('text', ''),
+                'confidence': segment.get('confidence', 0.0)
+            })
+        return formatted_segments
+    
+    def _format_words(self, words: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Format word-level timestamp data."""
+        formatted_words = []
+        for word in words:
+            formatted_words.append({
+                'word': word.get('word', ''),
+                'start': word.get('start', 0.0),
+                'end': word.get('end', 0.0),
+                'confidence': word.get('confidence', 0.0)
+            })
+        return formatted_words
+    
+    def _calculate_quality_metrics(
+        self, result: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Calculate quality metrics for transcription."""
+        try:
+            segments = result.get('segments', [])
+            if segments:
+                confidences = [seg.get('confidence', 0) for seg in segments]
+                avg_confidence = sum(confidences) / len(segments)
+            else:
+                avg_confidence = 0
+            
+            word_count = len(result.get('words', []))
+            duration = result.get('duration', 1)
+            
+            return {
+                'average_confidence': avg_confidence,
+                'segment_count': len(segments),
+                'word_count': word_count,
+                'speech_rate': word_count / duration,
+                'silence_ratio': self._calculate_silence_ratio(result)
+            }
+            
+        except Exception as e:
+            logging.error(f"Error calculating quality metrics: {e}")
+            return {}
+    
+    def _calculate_silence_ratio(
+        self, result: Dict[str, Any]
+    ) -> float:
+        """Calculate ratio of silence in the audio."""
+        try:
+            total_duration = result.get('duration', 0)
+            segments = result.get('segments', [])
+            speech_duration = sum(
+                seg.get('end', 0) - seg.get('start', 0) for seg in segments
+            )
+            if total_duration > 0:
+                return max(0, (total_duration - speech_duration) / total_duration)
+            return 0
+            
+        except Exception as e:
+            logging.error(f"Error calculating silence ratio: {e}")
+            return 0.0

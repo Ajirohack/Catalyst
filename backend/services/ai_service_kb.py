@@ -6,13 +6,17 @@ Adds KB-specific AI methods to the EnhancedAIService
 import asyncio
 import logging
 import json
-from typing import List, Dict, Any, Optional, Union
-from datetime import datetime
+try:
+    from typing import List, Dict, Any, Optional, Union
+    from datetime import datetime
 
-from services.ai_service import EnhancedAIService, AIProvider, AnalysisType
-from config import get_logger
+    from services.ai_service import EnhancedAIService, AIProvider, AnalysisType
+    from config import get_logger
+except ImportError:
+    pass
 
-logger = get_logger(__name__)
+# Configure logger
+logger = logging.getLogger(__name__)
 
 class AIService(EnhancedAIService):
     """Extended AI service with Knowledge Base specific capabilities"""

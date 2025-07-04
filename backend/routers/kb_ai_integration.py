@@ -3,15 +3,39 @@ Knowledge Base AI Integration Router
 Provides endpoints for KB-AI integration features
 """
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+try:
+    try:
+    try:
+    from fastapi import APIRouter, HTTPException, Depends, Query
 from typing import List, Optional, Dict, Any
 import asyncio
 
-from services.kb_ai_integration import KnowledgeBaseAIIntegration
-from services.ai_service import AIProvider
+from services
+except ImportError
+except ImportError
+except ImportError:
+    pass
+:
+    pass
+:
+    pass
+.kb_ai_integration import KnowledgeBaseAIIntegration
+try:
+    try:
+    try:
+    from services.ai_service import AIProvider
 from config import get_logger
 
-router = APIRouter()
+router 
+except ImportError
+except ImportError
+except ImportError:
+    pass
+:
+    pass
+:
+    pass
+= APIRouter()
 logger = get_logger(__name__)
 
 # Initialize the integrated service
